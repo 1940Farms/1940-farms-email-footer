@@ -50,11 +50,17 @@
   <h2>Logo</h2>
   <label>Logo image</label>
   <select data-k="logoFile">
-    <option value="1940 Farms Logo - Email (on white, plays once).gif">Animated, plays once and holds (on white)</option>
-    <option value="1940 Farms Logo - Email (on white, loops).gif">Animated, loops (on white)</option>
-    <option value="1940 Farms Logo - Email (transparent, plays once).gif">Animated, plays once (transparent)</option>
-    <option value="1940 Farms Logo - Email (transparent, loops).gif">Animated, loops (transparent)</option>
-    <option value="1940 Farms Logo - Email (still).png">Still image (best for Outlook)</option>
+    <optgroup label="1940 Farms + SZN">
+      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (on white, plays once).gif">1940 Farms, then SZN, animated (plays once)</option>
+      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (still).png">1940 Farms + SZN, still image (best for Outlook)</option>
+    </optgroup>
+    <optgroup label="1940 Farms only">
+      <option value="1940 Farms Logo - Email (on white, plays once).gif">Animated, plays once and holds (on white)</option>
+      <option value="1940 Farms Logo - Email (on white, loops).gif">Animated, loops (on white)</option>
+      <option value="1940 Farms Logo - Email (transparent, plays once).gif">Animated, plays once (transparent)</option>
+      <option value="1940 Farms Logo - Email (transparent, loops).gif">Animated, loops (transparent)</option>
+      <option value="1940 Farms Logo - Email (still).png">Still image (best for Outlook)</option>
+    </optgroup>
   </select>
   <label>Custom image URL (optional; the logos above load from GitHub)</label>
   <input type="url" data-k="logoUrl" placeholder="https://… (leave blank to use the hosted logo)">
@@ -115,6 +121,7 @@
     <div class="note">
       <b>Gmail:</b> Settings → See all settings → General → Signature → select your signature, clear the box, paste with ⌘V → Save Changes.<br>
       <b>Apple Mail / Outlook:</b> same idea: paste into the signature editor. Outlook for Windows shows only the first frame of a GIF, and this animation's first frame is blank, so use the still image there.<br>
+      <b>When images are blocked</b> (Outlook does this for new senders): your details still show, because they're real text, and the logo space shows its name in bold instead.<br>
       The logos load from GitHub (1940Farms/szn-social-images, email-footer folder), so they work in any email client.
     </div>
   </div>
@@ -139,7 +146,10 @@ const DEFAULTS = {
   nameColor: "#444444", titleColor: "#555555", textColor: "#222222",
   linkColor: "#1155cc", tagColor: "#777777", divColor: "#d0d0d0"
 };
-const LOGO_RATIO = 520 / 240;   // width / height of the logo files
+const isCombo = (file) => file.startsWith("1940 + SZN");
+const logoRatio = () => isCombo(S.logoFile) ? 628 / 172 : 520 / 240;   // width / height of the logo files
+// Shown in place of the logo when an email app blocks images (Outlook does for new senders)
+const logoAlt = () => isCombo(S.logoFile) ? "1940 Farms | SZN Spice Company" : "1940 Farms";
 const KEY = "1940-email-footer-shared-v1";
 let S;
 try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = { ...DEFAULTS }; }
@@ -154,6 +164,8 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e
 
 const HOSTED = "https://raw.githubusercontent.com/1940Farms/szn-social-images/main/email-footer/";
 const HOSTED_FILES = {
+  "1940 + SZN Footer/1940 + SZN Logos - Email (on white, plays once).gif": "1940-szn-logos-on-white-once.gif",
+  "1940 + SZN Footer/1940 + SZN Logos - Email (still).png": "1940-szn-logos-still.png",
   "1940 Farms Logo - Email (on white, plays once).gif": "1940-logo-on-white-once.gif",
   "1940 Farms Logo - Email (on white, loops).gif": "1940-logo-on-white-loop.gif",
   "1940 Farms Logo - Email (transparent, plays once).gif": "1940-logo-transparent-once.gif",
@@ -182,9 +194,10 @@ function build(logoH, forExport) {
   const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.email)}</a>` : "";
   const contact = [esc(S.phone), mail].filter(Boolean).join(" | ");
   const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
-  const w = Math.round(logoH * LOGO_RATIO);
+  const w = Math.round(logoH * logoRatio());
   const fallback = !forExport && !S.logoUrl.trim() ? ` onerror="this.onerror=null;this.src='${encodeURI(S.logoFile)}'"` : "";
-  let img = `<img src="${esc(logoSrc())}"${fallback} width="${w}" height="${logoH}" alt="1940 Farms" style="display:block;width:${w}px;height:${logoH}px;border:0;outline:none;">`;
+  // the font styles only show when images are blocked: the alt text then reads as a tidy brand line
+  let img = `<img src="${esc(logoSrc())}"${fallback} width="${w}" height="${logoH}" alt="${esc(logoAlt())}" style="display:block;width:${w}px;height:${logoH}px;border:0;outline:none;font-family:${f};font-size:${S.nameSize}px;font-weight:bold;line-height:${logoH}px;color:#272424;text-align:center;">`;
   if (S.logoLink) img = `<a href="${esc(S.logoLink)}" style="display:block;">${img}</a>`;
   const div = S.divider === "line" ? `border-right:1px solid ${S.divColor};` : "";
   const gapR = S.divider === "line" ? Math.round(S.gap) : S.gap;
@@ -230,7 +243,7 @@ function render() {
     const total = Math.round(document.querySelector("#sig table").getBoundingClientRect().height);
     const grew = total > tH;
     document.getElementById("dims").innerHTML =
-      `Text block: ${tH}px tall · Logo: ${Math.round(logoH * LOGO_RATIO)}×${logoH}px · Whole footer: ${total}px tall ` +
+      `Text block: ${tH}px tall · Logo: ${Math.round(logoH * logoRatio())}×${logoH}px · Whole footer: ${total}px tall ` +
       (grew ? `<span style="color:#a33">(the logo is making it ${total - tH}px taller)</span>` : `<span class="ok">✓ no taller than the text</span>`);
   }, 0);
   const warn = document.getElementById("urlWarn");
