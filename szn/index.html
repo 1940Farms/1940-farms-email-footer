@@ -41,9 +41,10 @@
   <label>Title line</label><input type="text" data-k="title">
   <label>Address</label><input type="text" data-k="address">
   <div class="two">
-    <div><label>Phone</label><input type="text" data-k="phone"></div>
+    <div><label>Cell phone (optional)</label><input type="text" data-k="cell" placeholder="e.g. 519-555-0123"></div>
     <div><label>Email</label><input type="text" data-k="email"></div>
   </div>
+  <label>Toll-free number</label><input type="text" data-k="phone">
   <label>Tagline (leave blank to hide)</label><input type="text" data-k="tagline">
   <label>Extra line (optional, e.g. a website)</label><input type="text" data-k="extra">
   <label>Extra line link (optional)</label><input type="url" data-k="extraUrl" placeholder="https://">
@@ -127,6 +128,7 @@ const DEFAULTS = {
   title: "Your Title, 1940 Farms Inc.",
   address: "101-145 Wharncliffe Rd S, London, ON N6J 2K4",
   phone: "1-833-FARMS-19 Ext. 0",
+  cell: "",
   email: "you@1940farms.com",
   tagline: "Sow Wellness. Reap Health.",
   extra: "", extraUrl: "",
@@ -134,10 +136,19 @@ const DEFAULTS = {
   logoUrl: "", logoLink: "",
   fitLogo: true, logoScale: 70, logoH: 86, gap: 16, divider: "none",
   font: "Arial, Helvetica, sans-serif",
+  // every line the same size and colour; only the name is bold
   nameSize: 13, textSize: 13, lineH: 22,
-  nameColor: "#444444", titleColor: "#555555", textColor: "#222222",
-  linkColor: "#1155cc", tagColor: "#777777", divColor: "#d0d0d0"
+  nameColor: "#222222", titleColor: "#222222", textColor: "#222222",
+  linkColor: "#222222", tagColor: "#222222", divColor: "#d0d0d0",
+  styleVersion: 2
 };
+// Settings saved before the matching-text update keep their details but take the new style.
+const STYLE_KEYS = ["font", "nameSize", "textSize", "lineH", "nameColor", "titleColor", "textColor", "linkColor", "tagColor"];
+function loadSaved(raw) {
+  const s = JSON.parse(raw || "{}");
+  if (s.styleVersion !== DEFAULTS.styleVersion) { STYLE_KEYS.forEach(k => delete s[k]); delete s.styleVersion; }
+  return s;
+}
 const isCombo = (file) => file.startsWith("1940 + SZN");
 const logoRatio = () => isCombo(S.logoFile) ? 628 / 172 : 520 / 240;   // width / height of the logo files
 // Shown in place of the logo when an email app blocks images (Outlook does for new senders)
@@ -147,7 +158,7 @@ const LOGO_KEY = KEY + ":logo:szn";              // logo choice: one per page
 const PAGE_LOGOS = [...document.querySelectorAll('[data-k="logoFile"] option')].map(o => o.value);
 let S;
 try {
-  S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}"));
+  S = Object.assign({}, DEFAULTS, loadSaved(localStorage.getItem(KEY)));
   const saved = JSON.parse(localStorage.getItem(LOGO_KEY) || "{}").logoFile;
   S.logoFile = PAGE_LOGOS.includes(saved) ? saved : DEFAULTS.logoFile;
 } catch (e) { S = { ...DEFAULTS }; }
@@ -189,9 +200,13 @@ function checkHosted(file) {
 function build(logoH, forExport) {
   const f = S.font, lh = S.lineH + "px";
   const line = (txt, color, size, extra = "") => txt ? `<div style="margin:0;padding:0;font-family:${f};font-size:${size}px;line-height:${lh};color:${color};${extra}">${txt}</div>` : "";
-  const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.email)}</a>` : "";
-  const contact = [esc(S.phone), mail].filter(Boolean).join(" | ");
-  const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
+  const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:none;">${esc(S.email)}</a>` : "";
+  // With a cell number:  "Cell: … | email"  then  "Toll Free: …".   Without:  "Toll Free: … | email".
+  const cell = S.cell && S.cell.trim() ? `Cell: ${esc(S.cell.trim())}` : "";
+  const toll = S.phone && S.phone.trim() ? `Toll Free: ${esc(S.phone.trim())}` : "";
+  const contact = cell ? [cell, mail].filter(Boolean).join(" | ") : [toll, mail].filter(Boolean).join(" | ");
+  const contact2 = cell ? toll : "";
+  const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:none;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
   const w = Math.round(logoH * logoRatio());
   const fallback = !forExport && !S.logoUrl.trim() ? ` onerror="this.onerror=null;this.src='${encodeURI(S.logoFile)}'"` : "";
   // the font styles only show when images are blocked: the alt text then reads as a tidy brand line
@@ -201,11 +216,12 @@ function build(logoH, forExport) {
   const gapR = S.divider === "line" ? Math.round(S.gap) : S.gap;
   const textCell = [
     line(esc(S.name), S.nameColor, S.nameSize, "font-weight:bold;"),
-    line(esc(S.title), S.titleColor, S.textSize - 1),
+    line(esc(S.title), S.titleColor, S.textSize),
     line(esc(S.address), S.textColor, S.textSize),
-    line(contact, S.textColor, S.textSize - 1),
-    extra ? line(extra, S.textColor, S.textSize - 1) : "",
-    S.tagline ? `<div style="height:${Math.round(S.lineH * 0.6)}px;line-height:${Math.round(S.lineH * 0.6)}px;font-size:1px;">&nbsp;</div>` + line(esc(S.tagline), S.tagColor, S.textSize - 1) : ""
+    line(contact, S.textColor, S.textSize),
+    contact2 ? line(contact2, S.textColor, S.textSize) : "",
+    extra ? line(extra, S.textColor, S.textSize) : "",
+    S.tagline ? `<div style="height:${Math.round(S.lineH * 0.6)}px;line-height:${Math.round(S.lineH * 0.6)}px;font-size:1px;">&nbsp;</div>` + line(esc(S.tagline), S.tagColor, S.textSize) : ""
   ].join("\n      ");
   return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;">
   <tr>
