@@ -33,7 +33,8 @@
 <main>
 <section class="panel" id="form">
   <h1>1940 Farms email footer builder</h1>
-  <div class="note">Every field updates the preview live. Type your own details, then click <b>Copy footer</b>. Your settings are remembered in this browser.</div>
+  <div class="note">Every field updates the preview live. Type your own details, then click <b>Copy footer</b>. Your details are remembered in this browser.</div>
+  <div class="note" style="margin-top:6px">Want the SZN logo beside the 1940 Farms logo? <a href="https://1940farms.github.io/1940-farms-email-footer/szn/" style="color:#272424;font-weight:600">Use the 1940 Farms + SZN version →</a></div>
 
   <h2>Text</h2>
   <label>Name</label><input type="text" data-k="name">
@@ -50,17 +51,11 @@
   <h2>Logo</h2>
   <label>Logo image</label>
   <select data-k="logoFile">
-    <optgroup label="1940 Farms + SZN">
-      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (on white, plays once).gif">1940 Farms, then SZN, animated (plays once)</option>
-      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (still).png">1940 Farms + SZN, still image (best for Outlook)</option>
-    </optgroup>
-    <optgroup label="1940 Farms only">
       <option value="1940 Farms Logo - Email (on white, plays once).gif">Animated, plays once and holds (on white)</option>
       <option value="1940 Farms Logo - Email (on white, loops).gif">Animated, loops (on white)</option>
       <option value="1940 Farms Logo - Email (transparent, plays once).gif">Animated, plays once (transparent)</option>
       <option value="1940 Farms Logo - Email (transparent, loops).gif">Animated, loops (transparent)</option>
       <option value="1940 Farms Logo - Email (still).png">Still image (best for Outlook)</option>
-    </optgroup>
   </select>
   <label>Custom image URL (optional; the logos above load from GitHub)</label>
   <input type="url" data-k="logoUrl" placeholder="https://… (leave blank to use the hosted logo)">
@@ -150,9 +145,15 @@ const isCombo = (file) => file.startsWith("1940 + SZN");
 const logoRatio = () => isCombo(S.logoFile) ? 628 / 172 : 520 / 240;   // width / height of the logo files
 // Shown in place of the logo when an email app blocks images (Outlook does for new senders)
 const logoAlt = () => isCombo(S.logoFile) ? "1940 Farms | SZN Spice Company" : "1940 Farms";
-const KEY = "1940-email-footer-shared-v1";
+const KEY = "1940-email-footer-shared-v1";          // your details: shared by both footer pages
+const LOGO_KEY = KEY + ":logo:1940";              // logo choice: one per page
+const PAGE_LOGOS = [...document.querySelectorAll('[data-k="logoFile"] option')].map(o => o.value);
 let S;
-try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = { ...DEFAULTS }; }
+try {
+  S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}"));
+  const saved = JSON.parse(localStorage.getItem(LOGO_KEY) || "{}").logoFile;
+  S.logoFile = PAGE_LOGOS.includes(saved) ? saved : DEFAULTS.logoFile;
+} catch (e) { S = { ...DEFAULTS }; }
 
 const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fields = [...document.querySelectorAll("[data-k]")];
@@ -160,7 +161,7 @@ const fields = [...document.querySelectorAll("[data-k]")];
 function load() {
   fields.forEach(f => { const v = S[f.dataset.k]; if (f.type === "checkbox") f.checked = !!v; else f.value = v; });
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function save() { try { const { logoFile, ...details } = S; localStorage.setItem(KEY, JSON.stringify(details)); localStorage.setItem(LOGO_KEY, JSON.stringify({ logoFile })); } catch (e) {} }
 
 const HOSTED = "https://raw.githubusercontent.com/1940Farms/szn-social-images/main/email-footer/";
 const HOSTED_FILES = {
