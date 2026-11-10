@@ -23,6 +23,9 @@
   .stage { background:#fff; border:1px solid var(--line); border-radius:10px; padding:28px 28px 32px; overflow-x:auto; }
   .stage.dark { background:#1f1f1f; }
   #sig { width:max-content; }   /* preview at the real email width; scroll sideways in narrow windows instead of wrapping */
+  .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .top button { padding:6px 12px; font-size:13px; white-space:nowrap; }
+  .suffix { display:flex; align-items:center; gap:6px; } .suffix input { flex:1; min-width:0; } .suffix span { white-space:nowrap; color:var(--ink); }
   .note { font-size:12px; color:var(--muted); margin-top:10px; }
   .warn { background:#fff4d6; border:1px solid #e8c766; border-radius:8px; padding:10px 12px; font-size:13px; margin-top:12px; }
   .ok { color:#2b6b2b; font-weight:600; }
@@ -33,26 +36,26 @@
 <body>
 <main>
 <section class="panel" id="form">
+  <div class="top">
   <h1>1940 Farms email footer builder</h1>
+  <button class="ghost" id="refresh" title="Clear the form and start again">&#8635; Refresh</button>
+  </div>
   <div class="note">Every field updates the preview live. Type your own details, then click <b>Copy footer</b>. Your details are remembered in this browser.</div>
   <div class="note" style="margin-top:6px">Want the SZN logo beside the 1940 Farms logo? <a href="https://1940farms.github.io/1940-farms-email-footer/szn/" style="color:#272424;font-weight:600">Use the 1940 Farms + SZN version →</a></div>
 
   <h2>Text</h2>
   <label>Name</label><input type="text" data-k="name">
-  <label>Title line</label><input type="text" data-k="title">
+  <label>Position</label><div class="suffix"><input type="text" data-k="title" placeholder="Your Position"><span>, 1940 Farms Inc.</span></div>
   <label>Address</label><input type="text" data-k="address">
   <div class="two">
     <div><label>Cell phone (optional)</label><input type="text" data-k="cell" placeholder="e.g. 519-555-0123"></div>
     <div><label>Email</label><input type="text" data-k="email"></div>
   </div>
-  <label>Toll-free number</label><input type="text" data-k="phone">
-  <label>Tagline (leave blank to hide)</label><input type="text" data-k="tagline">
+  <label>Toll-free extension</label><div class="suffix"><span>1-833-FARMS-19 Ext.</span><input type="text" data-k="ext" inputmode="numeric" style="flex:0 0 90px"></div>
   <label>Extra line (optional, e.g. a website)</label><input type="text" data-k="extra">
   <label>Extra line link (optional)</label><input type="url" data-k="extraUrl" placeholder="https://">
 
-  <h2>Logo</h2>
-  <label>Logo link (optional)</label><input type="url" data-k="logoLink" placeholder="https://">
-  <div class="note">The logo, fonts, sizes and colours are the same for everyone, so every 1940 Farms signature matches.</div>
+  <div class="note">The logo (which links to 1940farms.com), toll-free number, tagline, fonts, sizes and colours are the same for everyone, so every 1940 Farms signature matches.</div>
 </section>
 
 <section>
@@ -86,15 +89,16 @@
 <script>
 const DEFAULTS = {
   name: "Your Name",
-  title: "Your Title, 1940 Farms Inc.",
+  title: "Your Position",   // the position only; ", 1940 Farms Inc." is always added
   address: "101-145 Wharncliffe Rd S, London, ON N6J 2K4",
-  phone: "1-833-FARMS-19 Ext. 0",
+  phone: "1-833-FARMS-19",   // fixed; people only type their extension
+  ext: "0",
   cell: "",
   email: "you@1940farms.com",
-  tagline: "Sow Wellness. Reap Health.",
+  tagline: "Sow Wellness. Reap Health.",   // fixed for everyone
   extra: "", extraUrl: "",
   logoFile: "1940 Farms Logo - Email (on white, plays once).gif",
-  logoUrl: "", logoLink: "",
+  logoUrl: "", logoLink: "https://1940farms.com/",   // fixed: the logo always links to the homepage
   fitLogo: true, logoScale: 70, logoH: 86, gap: 16, divider: "none",
   font: "Arial, Helvetica, sans-serif",
   // every line the same size and colour; only the name is bold
@@ -106,10 +110,19 @@ const DEFAULTS = {
 };
 // The look is standard for everyone: saved settings only ever restore the details people typed.
 const LOCKED_KEYS = ["font", "nameSize", "textSize", "lineH", "nameColor", "titleColor", "textColor", "linkColor", "tagColor",
-                     "divColor", "fitLogo", "logoScale", "logoH", "gap", "divider", "logoUrl", "logoFile", "styleVersion"];
+                     "divColor", "fitLogo", "logoScale", "logoH", "gap", "divider", "logoUrl", "logoFile", "styleVersion",
+                     "phone", "tagline", "logoLink"];   // the toll-free number and tagline are the same for everyone
+// The title line is always "<position>, 1940 Farms Inc."; people only type their position.
+const COMPANY = "1940 Farms Inc.";
+const position = t => String(t || "").replace(/,?\s*1940\s*Farms(\s*Inc\.?)?\s*$/i, "").trim();
+const titleLine = () => position(S.title) ? `${position(S.title)}, ${COMPANY}` : COMPANY;
 function loadSaved(raw) {
   const s = JSON.parse(raw || "{}");
+  // older saves held the whole toll-free number: keep just the extension
+  if (s.phone && !("ext" in s)) { const m = String(s.phone).match(/ext\.?\s*(\w+)/i); if (m) s.ext = m[1]; }
   LOCKED_KEYS.forEach(k => delete s[k]);
+  if ("title" in s) s.title = position(s.title);   // older saves held the whole line
+  if (s.title === "Your Title") s.title = "Your Position";   // the old example text
   return s;
 }
 const isCombo = (file) => file.startsWith("1940 + SZN");
@@ -160,7 +173,7 @@ function build(logoH, forExport) {
   const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.email)}</a>` : "";
   // With a cell number:  "Cell: … | email"  then  "Toll Free: …".   Without:  "Toll Free: … | email".
   const cell = S.cell && S.cell.trim() ? `Cell: ${esc(S.cell.trim())}` : "";
-  const toll = S.phone && S.phone.trim() ? `Toll Free: ${esc(S.phone.trim())}` : "";
+  const toll = `Toll Free: ${esc(S.phone)}` + (String(S.ext || "").trim() ? ` Ext. ${esc(String(S.ext).trim())}` : "");
   const contact = cell ? [cell, mail].filter(Boolean).join(" | ") : [toll, mail].filter(Boolean).join(" | ");
   const contact2 = cell ? toll : "";
   const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
@@ -173,7 +186,7 @@ function build(logoH, forExport) {
   const gapR = S.divider === "line" ? Math.round(S.gap) : S.gap;
   const textCell = [
     line(esc(S.name), S.nameColor, S.nameSize, "font-weight:bold;"),
-    line(esc(S.title), S.titleColor, S.textSize),
+    line(esc(titleLine()), S.titleColor, S.textSize),
     line(esc(S.address), S.textColor, S.textSize),
     line(contact, S.textColor, S.textSize),
     contact2 ? line(contact2, S.textColor, S.textSize) : "",
@@ -265,6 +278,24 @@ document.getElementById("download").onclick = () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
   a.download = "1940-farms-email-footer.html"; a.click();
+};
+
+// Example text clears when someone clicks into the box, and comes back if they leave it empty.
+const EXAMPLES = { name: "Your Name", title: "Your Position", email: "you@1940farms.com", ext: "0" };
+fields.forEach(f => {
+  const ex = EXAMPLES[f.dataset.k];
+  if (!ex) return;
+  f.addEventListener("focus", () => { if (f.value === ex) { f.value = ""; S[f.dataset.k] = ""; render(); } });
+  f.addEventListener("blur", () => { if (!f.value.trim() && DEFAULTS[f.dataset.k] === ex) { f.value = ex; S[f.dataset.k] = ex; render(); } });
+});
+
+// Refresh: put every field back to the starting details (and forget what was saved in this browser)
+document.getElementById("refresh").onclick = () => {
+  if (!confirm("Clear the form and start again?")) return;
+  S = { ...DEFAULTS };
+  load();
+  render();
+  toast("Form refreshed");
 };
 
 load();
