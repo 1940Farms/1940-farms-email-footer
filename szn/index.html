@@ -50,48 +50,8 @@
   <label>Extra line link (optional)</label><input type="url" data-k="extraUrl" placeholder="https://">
 
   <h2>Logo</h2>
-  <label>Logo image</label>
-  <select data-k="logoFile">
-      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (on white, plays once).gif">1940 Farms, then SZN, animated (plays once)</option>
-      <option value="1940 + SZN Footer/1940 + SZN Logos - Email (still).png">1940 Farms + SZN, still image (best for Outlook)</option>
-  </select>
-  <label>Custom image URL (optional; the logos above load from GitHub)</label>
-  <input type="url" data-k="logoUrl" placeholder="https://… (leave blank to use the hosted logo)">
   <label>Logo link (optional)</label><input type="url" data-k="logoLink" placeholder="https://">
-  <label class="check"><input type="checkbox" data-k="fitLogo"> Size the logo from the text height (footer never gets taller)</label>
-  <label>Logo size (% of text height, 100 = full height)</label><input type="number" data-k="logoScale" min="30" max="100" step="5">
-  <div class="three">
-    <div><label>Logo height (px)</label><input type="number" data-k="logoH" min="40" max="200"></div>
-    <div><label>Gap (px)</label><input type="number" data-k="gap" min="0" max="60"></div>
-    <div><label>Divider</label><select data-k="divider"><option value="none">None</option><option value="line">Thin line</option></select></div>
-  </div>
-
-  <h2>Style</h2>
-  <label>Font</label>
-  <select data-k="font">
-    <option value="Arial, Helvetica, sans-serif">Arial (Gmail default)</option>
-    <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-    <option value="Verdana, Geneva, sans-serif">Verdana</option>
-    <option value="Georgia, 'Times New Roman', serif">Georgia</option>
-    <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-    <option value="'Trebuchet MS', Arial, sans-serif">Trebuchet</option>
-  </select>
-  <div class="three">
-    <div><label>Name size</label><input type="number" data-k="nameSize" min="9" max="24"></div>
-    <div><label>Text size</label><input type="number" data-k="textSize" min="9" max="20"></div>
-    <div><label>Line height</label><input type="number" data-k="lineH" min="12" max="32"></div>
-  </div>
-  <div class="three">
-    <div><label>Name colour</label><input type="color" data-k="nameColor"></div>
-    <div><label>Text colour</label><input type="color" data-k="textColor"></div>
-    <div><label>Link colour</label><input type="color" data-k="linkColor"></div>
-  </div>
-  <div class="three">
-    <div><label>Title colour</label><input type="color" data-k="titleColor"></div>
-    <div><label>Tagline colour</label><input type="color" data-k="tagColor"></div>
-    <div><label>Divider colour</label><input type="color" data-k="divColor"></div>
-  </div>
-  <div class="btns"><button class="ghost" id="reset">Reset to defaults</button></div>
+  <div class="note">The logo, fonts, sizes and colours are the same for everyone, so every 1940 Farms signature matches.</div>
 </section>
 
 <section>
@@ -113,7 +73,7 @@
     <h2>How to install</h2>
     <div class="note">
       <b>Gmail:</b> Settings → See all settings → General → Signature → select your signature, clear the box, paste with ⌘V → Save Changes.<br>
-      <b>Apple Mail / Outlook:</b> same idea: paste into the signature editor. Outlook for Windows shows only the first frame of a GIF, and this animation's first frame is blank, so use the still image there.<br>
+      <b>Apple Mail / Outlook:</b> same idea: paste into the signature editor.<br>
       <b>When images are blocked</b> (Outlook does this for new senders): your details still show, because they're real text, and the logo space shows its name in bold instead.<br>
       The logos load from GitHub (1940Farms/szn-social-images, email-footer folder), so they work in any email client.
     </div>
@@ -137,31 +97,27 @@ const DEFAULTS = {
   fitLogo: true, logoScale: 70, logoH: 86, gap: 16, divider: "none",
   font: "Arial, Helvetica, sans-serif",
   // every line the same size and colour; only the name is bold
-  nameSize: 13, textSize: 13, lineH: 22,
-  nameColor: "#222222", titleColor: "#222222", textColor: "#222222",
-  linkColor: "#222222", tagColor: "#222222", divColor: "#d0d0d0",
+  // tighter lines; name bold in 75% grey; email a dark-blue underlined link; everything else one colour
+  nameSize: 13, textSize: 13, lineH: 18,
+  nameColor: "#404040", titleColor: "#222222", textColor: "#222222",
+  linkColor: "#0b3d91", tagColor: "#222222", divColor: "#d0d0d0",
   styleVersion: 2
 };
-// Settings saved before the matching-text update keep their details but take the new style.
-const STYLE_KEYS = ["font", "nameSize", "textSize", "lineH", "nameColor", "titleColor", "textColor", "linkColor", "tagColor"];
+// The look is standard for everyone: saved settings only ever restore the details people typed.
+const LOCKED_KEYS = ["font", "nameSize", "textSize", "lineH", "nameColor", "titleColor", "textColor", "linkColor", "tagColor",
+                     "divColor", "fitLogo", "logoScale", "logoH", "gap", "divider", "logoUrl", "logoFile", "styleVersion"];
 function loadSaved(raw) {
   const s = JSON.parse(raw || "{}");
-  if (s.styleVersion !== DEFAULTS.styleVersion) { STYLE_KEYS.forEach(k => delete s[k]); delete s.styleVersion; }
+  LOCKED_KEYS.forEach(k => delete s[k]);
   return s;
 }
 const isCombo = (file) => file.startsWith("1940 + SZN");
 const logoRatio = () => isCombo(S.logoFile) ? 628 / 172 : 520 / 240;   // width / height of the logo files
 // Shown in place of the logo when an email app blocks images (Outlook does for new senders)
 const logoAlt = () => isCombo(S.logoFile) ? "1940 Farms | SZN Spice Company" : "1940 Farms";
-const KEY = "1940-email-footer-shared-v1";          // your details: shared by both footer pages
-const LOGO_KEY = KEY + ":logo:szn";              // logo choice: one per page
-const PAGE_LOGOS = [...document.querySelectorAll('[data-k="logoFile"] option')].map(o => o.value);
+const KEY = "1940-email-footer-shared-v1";   // details shared by both pages
 let S;
-try {
-  S = Object.assign({}, DEFAULTS, loadSaved(localStorage.getItem(KEY)));
-  const saved = JSON.parse(localStorage.getItem(LOGO_KEY) || "{}").logoFile;
-  S.logoFile = PAGE_LOGOS.includes(saved) ? saved : DEFAULTS.logoFile;
-} catch (e) { S = { ...DEFAULTS }; }
+try { S = Object.assign({}, DEFAULTS, loadSaved(localStorage.getItem(KEY))); } catch (e) { S = { ...DEFAULTS }; }
 
 const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fields = [...document.querySelectorAll("[data-k]")];
@@ -169,7 +125,7 @@ const fields = [...document.querySelectorAll("[data-k]")];
 function load() {
   fields.forEach(f => { const v = S[f.dataset.k]; if (f.type === "checkbox") f.checked = !!v; else f.value = v; });
 }
-function save() { try { const { logoFile, ...details } = S; localStorage.setItem(KEY, JSON.stringify(details)); localStorage.setItem(LOGO_KEY, JSON.stringify({ logoFile })); } catch (e) {} }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 const HOSTED = "https://raw.githubusercontent.com/1940Farms/szn-social-images/main/email-footer/";
 const HOSTED_FILES = {
@@ -200,13 +156,13 @@ function checkHosted(file) {
 function build(logoH, forExport) {
   const f = S.font, lh = S.lineH + "px";
   const line = (txt, color, size, extra = "") => txt ? `<div style="margin:0;padding:0;font-family:${f};font-size:${size}px;line-height:${lh};color:${color};${extra}">${txt}</div>` : "";
-  const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:none;">${esc(S.email)}</a>` : "";
+  const mail = S.email ? `<a href="mailto:${esc(S.email)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.email)}</a>` : "";
   // With a cell number:  "Cell: … | email"  then  "Toll Free: …".   Without:  "Toll Free: … | email".
   const cell = S.cell && S.cell.trim() ? `Cell: ${esc(S.cell.trim())}` : "";
   const toll = S.phone && S.phone.trim() ? `Toll Free: ${esc(S.phone.trim())}` : "";
   const contact = cell ? [cell, mail].filter(Boolean).join(" | ") : [toll, mail].filter(Boolean).join(" | ");
   const contact2 = cell ? toll : "";
-  const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:none;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
+  const extra = S.extra ? (S.extraUrl ? `<a href="${esc(S.extraUrl)}" style="color:${S.linkColor};text-decoration:underline;">${esc(S.extra)}</a>` : esc(S.extra)) : "";
   const w = Math.round(logoH * logoRatio());
   const fallback = !forExport && !S.logoUrl.trim() ? ` onerror="this.onerror=null;this.src='${encodeURI(S.logoFile)}'"` : "";
   // the font styles only show when images are blocked: the alt text then reads as a tidy brand line
@@ -248,9 +204,8 @@ function textHeight() {
 
 function render() {
   const tH = textHeight();
-  const scale = Math.min(100, Math.max(20, Number(S.logoScale) || 70));
-  const logoH = S.fitLogo ? Math.round(tH * scale / 100) : Number(S.logoH);
-  if (S.fitLogo) document.querySelector('[data-k="logoH"]').value = logoH;
+  // one standard logo height for everyone (86px), never taller than the text beside it
+  const logoH = Math.min(86, tH);
   document.getElementById("sig").innerHTML = build(logoH, false);
   document.getElementById("code").value = build(logoH, true);
   setTimeout(() => {
@@ -277,11 +232,8 @@ function render() {
 fields.forEach(f => f.addEventListener("input", () => {
   const k = f.dataset.k;
   S[k] = f.type === "checkbox" ? f.checked : (f.type === "number" ? Number(f.value) : f.value);
-  if (k === "logoH") { S.fitLogo = false; document.querySelector('[data-k="fitLogo"]').checked = false; }
-  if (k === "logoScale") { S.fitLogo = true; document.querySelector('[data-k="fitLogo"]').checked = true; }
   render();
 }));
-document.getElementById("reset").onclick = () => { S = { ...DEFAULTS }; load(); render(); toast("Reset"); };
 document.getElementById("darkBg").onchange = e => document.getElementById("stage").classList.toggle("dark", e.target.checked);
 
 function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.style.opacity = 1; setTimeout(() => el.style.opacity = 0, 1600); }
