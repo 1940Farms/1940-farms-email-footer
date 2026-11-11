@@ -12,7 +12,10 @@ const todayTO = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", 
 const add = (d, n) => { const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 const lo = add(todayTO, -4), hi = add(todayTO, 6);
 const needed = new Set([...(R.reels || []), ...(R.boosted || [])].map(r => r && r.id).filter(Boolean));
-const items = D.items.filter(i => (i.day >= lo && i.day <= hi) || needed.has(i.id));
+// X (Twitter) isn't tracked: drop X posts, and any item that only went to X.
+const items = D.items.filter(i => (i.day >= lo && i.day <= hi) || needed.has(i.id))
+  .map(i => ({ ...i, posts: (i.posts || []).filter(p => p.platform !== "x") }))
+  .filter(i => i.posts.length);
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, "data.js"), "window.SZN_DATA = " + JSON.stringify({ ...D, items, team: { built: new Date().toISOString(), today: todayTO } }) + ";\n");
 fs.copyFileSync(path.join(src, "report.js"), path.join(out, "report.js"));
@@ -21,6 +24,8 @@ fs.copyFileSync(path.join(src, "logo_white.png"), path.join(out, "logo_white.png
 let h = fs.readFileSync(path.join(src, "index.html"), "utf8");
 const must = (a, b) => { if (!h.includes(a)) throw new Error("Calendar page changed; can't find: " + a.slice(0, 80)); h = h.replace(a, b); };
 // Title and header line
+must('const PLATS = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube", x: "X" };', 'const PLATS = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube" };');
+must('const SHORT = { ig: "IG", fb: "FB", tt: "TT", yt: "YT", x: "X" };', 'const SHORT = { ig: "IG", fb: "FB", tt: "TT", yt: "YT" };');
 h = h.replace(/<title>[^<]*<\/title>/, "<title>SZN Team Calendar</title>");
 if (!/^<!doctype/i.test(h)) h = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + h + "</body></html>";
 h = h.replace(/<meta name="claude:[^>]*>/g, "");
