@@ -1011,7 +1011,7 @@ button.rc-row:hover { background: var(--bg); }
         ["d28", "Last 28 days", `${md(S.ranges.d28[0])}–${md(S.ranges.d28[1])}`, "vs the 28 days before"],
       ];
       box.innerHTML = `<thead><tr><th></th>${cols.map(([, t, r, vs]) => `<th>${t}<small>${r} · ${vs}</small></th>`).join("")}</tr></thead>
-        <tbody>${S.rows.map(row => `<tr><th>${row.label}</th>${cols.map(([c]) => cell(row.key, row[c], row.approx)).join("")}</tr>`).join("")}</tbody>`;
+        <tbody>${S.rows.filter(row => !(k === "yt" && row.key === "posts")).map(row => `<tr><th>${row.label}</th>${cols.map(([c]) => cell(row.key, row[c], row.approx)).join("")}</tr>`).join("")}</tbody>`;
       document.getElementById("repSumTitle").textContent = `${NAMES[k]} at a glance`;
       document.getElementById("repSumWhy").textContent = why(k, S);
       tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.gl === k));
