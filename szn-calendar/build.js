@@ -64,6 +64,8 @@ const builtAt = new Date().toLocaleString("en-US", { timeZone: "America/Toronto"
 const nowHM = new Intl.DateTimeFormat("en-GB", { timeZone: "America/Toronto", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
 const nextDay = nowHM < "07:30" ? todayTO : add(todayTO, 1);
 const nextLabel = new Date(nextDay + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
-h = h.replace(/(<div class="sub" id="sub" data-team>)[^<]*/, "$1Last updated " + builtAt + " · Next update " + nextLabel + " around 7:30 AM");
+// When the numbers themselves were last pulled (Buffer and Meta), beside when this page was built.
+const dataAt = String(D.generated || "").replace(/^(\w{3} \d+), \d{4} at /, "$1 at ");
+h = h.replace(/(<div class="sub" id="sub" data-team>)[^<]*/, "$1Last updated " + builtAt + (dataAt ? " · Data as of " + dataAt : "") + " · Next update " + nextLabel + " around 7:30 AM");
 fs.writeFileSync(path.join(out, "index.html"), h);
 console.log(JSON.stringify({ today: todayTO, items: items.length, dataKB: Math.round(fs.statSync(path.join(out, "data.js")).size / 1024), generated: D.generated }));
