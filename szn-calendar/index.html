@@ -1,0 +1,1454 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* Team version */
+.group:has(#vWeek), #refreshBtn, #lastRef, .navbtn, .todaybtn { display: none !important; }
+.wkview.team .dow, .wkview.team .grid { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+.wkview.team .day.past-team { background: color-mix(in srgb, var(--past) 55%, var(--panel)); }
+.teamnote { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+@media (max-width: 760px) { .wkview.team .grid { grid-template-columns: minmax(0, 1fr); } }
+</style></head><body>
+<title>SZN Team Calendar</title>
+
+<script>try { const t = localStorage.getItem("szn-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: brand header, then a month grid or a week-by-platform board; every post shows its own thumbnail and title. */
+:root {
+  --bg: #f6f2ec;
+  --panel: #ffffff;
+  --ink: #1d1714;
+  --muted: #74675e;
+  --line: #e4dbd1;
+  --red: #c8231f;
+  --red-ink: #ffffff;
+  --today: #fff1d6;
+  --past: #efe9e2;
+  --shadow: 0 1px 2px rgba(40,20,10,.08), 0 4px 14px rgba(40,20,10,.06);
+  --ig: #c81f6b; --fb: #1466d6; --tt: #111111; --yt: #e00000; --x: #555555;
+  --k-reel: #c8231f; --k-fuego: #e2701b; --k-thisorthat: #7a4bd1; --k-compilation: #2e8b57;
+  --k-longform: #8b1a1a; --k-repost: #b8901a; --k-graphic: #5f6b7a; --k-promo: #1b7f79; --k-story: #9a8c80;
+  /* Text versions of the brand/platform/type colours, checked for 4.5:1 contrast on every surface. */
+  --t-red: #b51f1b; --t-ig: #c2185b; --t-fb: #1460cf; --t-yt: #d00000; --t-x: #555555;
+  --kt-reel: #b51f1b; --kt-fuego: #a34d0d; --kt-thisorthat: #6a3fc0; --kt-compilation: #24734a;
+  --kt-longform: #8b1a1a; --kt-repost: #856508; --kt-graphic: #56606d; --kt-promo: #136661; --kt-story: #6f6359;
+  --display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16120f; --panel: #221c18; --ink: #f4ece4; --muted: #ad9f94; --line: #3a302a;
+  --today: #3a2b14; --past: #1b1612; --red: #e5413a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  --tt: #e9e9e9; --x: #9a9a9a; --k-graphic: #8592a3; --k-promo: #3fb8ae;
+  --t-red: #ff6b61; --t-ig: #ff6fae; --t-fb: #6aa9ff; --t-yt: #ff6464; --t-x: #a8a8a8;
+  --kt-reel: #ff6b61; --kt-fuego: #ffa057; --kt-thisorthat: #b896ff; --kt-compilation: #5fd49a;
+  --kt-longform: #ff9a8f; --kt-repost: #e9c255; --kt-graphic: #9aa7b8; --kt-promo: #6fd3ca; --kt-story: #b3a59a;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #16120f; --panel: #221c18; --ink: #f4ece4; --muted: #ad9f94; --line: #3a302a;
+  --today: #3a2b14; --past: #1b1612; --red: #e5413a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  --tt: #e9e9e9; --x: #9a9a9a; --k-graphic: #8592a3; --k-promo: #3fb8ae;
+  --t-red: #ff6b61; --t-ig: #ff6fae; --t-fb: #6aa9ff; --t-yt: #ff6464; --t-x: #a8a8a8;
+  --kt-reel: #ff6b61; --kt-fuego: #ffa057; --kt-thisorthat: #b896ff; --kt-compilation: #5fd49a;
+  --kt-longform: #ff9a8f; --kt-repost: #e9c255; --kt-graphic: #9aa7b8; --kt-promo: #6fd3ca; --kt-story: #b3a59a;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 14px; }
+.wrap { max-width: 1500px; margin: 0 auto; padding-block: 20px 60px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+section { min-width: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, .card:focus-visible, .story:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+/* Header */
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.badge { width: 60px; height: 60px; border-radius: 50%; background: var(--red); display: grid; place-items: center; flex: none; overflow: hidden; }
+.badge img { width: 44px; height: auto; display: block; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 4.5vw, 46px); line-height: .95; margin: 0; letter-spacing: .01em; text-transform: uppercase; }
+.sub { color: var(--muted); margin-top: 4px; font-size: 13px; }
+.totals { display: flex; gap: 10px; flex-wrap: wrap; }
+.total { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; min-width: 104px; }
+.total b { display: block; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.total span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+
+h2 { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: 22px; letter-spacing: .02em; margin: 0; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.hint { color: var(--muted); font-size: 12.5px; }
+
+/* Coming up strip */
+.strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; }
+.poster { flex: none; width: 150px; scroll-snap-align: start; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  overflow: hidden; text-align: left; padding: 0; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.poster .img { position: relative; aspect-ratio: 9/16; background: var(--past) center/cover no-repeat; }
+.poster .img.sq { aspect-ratio: 4/5; }
+.poster .img.wide { aspect-ratio: 16/9; }
+.poster:has(.img.wide) { width: 230px; }
+.poster .when { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.72); color: #fff; font-weight: 700; font-size: 11px;
+  border-radius: 6px; padding: 3px 6px; line-height: 1.2; }
+.poster .when b { display: block; font-size: 13px; }
+.poster .meta { padding: 8px 9px 10px; display: grid; gap: 6px; }
+.daycol { flex: none; width: 210px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; padding: 6px; box-shadow: var(--shadow); }
+.daycol > .when { position: static; align-self: flex-start; background: rgba(0,0,0,.72); color: #fff; font-weight: 700; font-size: 11px; border-radius: 6px; padding: 3px 6px; line-height: 1.2; }
+.daycol > .when b { display: inline; font-size: 13px; margin-right: 4px; }
+.mini { flex: 1 1 0; min-height: 0; display: flex; align-items: center; gap: 8px; text-align: left; padding: 4px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; }
+.mini .mth { flex: none; height: 100%; max-height: 124px; aspect-ratio: 9/16; border-radius: 5px; background: var(--past) center/cover no-repeat; }
+.mini.wide .mth { height: auto; width: 84px; aspect-ratio: 16/9; }
+.mini .mb { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mini .t { font-weight: 700; font-size: 12px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.more-n { font-size: 11px; font-weight: 700; color: var(--muted); padding: 0 4px; }
+
+.poster .t { font-weight: 700; font-size: 13px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Controls */
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group > .lbl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 2px; }
+.chip { border: 1.5px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 11px; font-size: 12.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.chip .sw { width: 9px; height: 9px; border-radius: 50%; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 6px 14px; font-weight: 800; font-size: 12.5px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+.navbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.navbar h2 { min-width: 0; font-size: 28px; }
+.navbtn { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--panel); font-size: 16px; font-weight: 800; }
+.todaybtn { border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 12.5px; }
+.months { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+
+/* Platform pills */
+.plats { display: flex; gap: 3px; flex-wrap: wrap; }
+.p { font-size: 9.5px; font-weight: 800; letter-spacing: .02em; line-height: 1; padding: 3px 4px; border-radius: 4px; color: #fff; }
+.p.sched { background: transparent !important; border: 1.5px dashed currentColor; padding: 1.5px 2.5px; }
+.p.err { outline: 2px solid #f0b400; }
+.p-ig { background: var(--ig); color: #fff; } .p-ig.sched { color: var(--t-ig); }
+.p-fb { background: var(--fb); } .p-fb.sched { color: var(--t-fb); }
+.p-tt { background: var(--tt); color: var(--bg); } .p-tt.sched { color: var(--tt); }
+.p-yt { background: var(--yt); } .p-yt.sched { color: var(--t-yt); }
+.p-x { background: var(--x); } .p-x.sched { color: var(--t-x); }
+
+/* Month grid */
+.cal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.dow, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.dow div { padding: 8px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-bottom: 1px solid var(--line); }
+.day { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-height: 150px; padding: 6px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.day:nth-child(7n) { border-right: 0; }
+.day.out { background: var(--past); }
+.day.out > * { opacity: .45; }
+.day.past:not(.out) { background: color-mix(in srgb, var(--past) 55%, var(--panel)); }
+.day.today { background: var(--today); box-shadow: inset 0 0 0 2px var(--red); }
+.dnum { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; }
+.today .dnum span:first-child { background: #c8231f; color: #fff; border-radius: 999px; padding: 1px 7px; }
+.dnum .tag { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--t-red); }
+
+.card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 7px; align-items: start; text-align: left; padding: 4px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--panel); border-left: 4px solid var(--kc, var(--line)); }
+.card:hover { box-shadow: var(--shadow); }
+.card.sched { border-style: dashed; border-left-style: solid; }
+.card .th { width: 34px; height: 54px; border-radius: 5px; background: var(--past) center/cover no-repeat; }
+.card .t { font-weight: 700; font-size: 12px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card .k { font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: .06em; color: var(--kt, var(--kc)); margin-bottom: 2px; }
+.card .cbody { display: grid; gap: 3px; min-width: 0; }
+.card .th { position: relative; overflow: hidden; }
+.orig { position: absolute; left: 3px; top: 3px; background: #111; color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .03em; line-height: 1; padding: 2px 3px; border-radius: 3px; box-shadow: 0 0 0 1px #fff, 0 1px 3px rgba(0,0,0,.4); white-space: nowrap; }
+.orig.inl { position: static; display: inline-block; box-shadow: none; }
+.cal:not(.wkview) .th .orig { display: none; }
+
+.stories { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: auto; }
+.story { width: 26px; height: 26px; border-radius: 50%; padding: 2px; border: 0; background: conic-gradient(#f9ce34, #ee2a7b, #6228d7, #f9ce34); }
+.story.sched { background: repeating-conic-gradient(var(--muted) 0 20deg, transparent 20deg 40deg); }
+.story i { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--past) center/cover no-repeat; border: 2px solid var(--panel); }
+.stories .n { font-size: 10.5px; font-weight: 700; color: var(--muted); }
+
+/* Week board */
+.board { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+.board table { border-collapse: collapse; width: 100%; min-width: 980px; table-layout: fixed; }
+.board th, .board td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; padding: 6px; }
+.board thead th { font-size: 12px; text-align: left; font-weight: 800; padding: 8px; }
+.board thead th small { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.board thead th.today { background: var(--today); box-shadow: inset 0 -3px 0 var(--red); }
+.board th.rowh { width: 108px; text-align: left; font-size: 12px; }
+.rowh .p { font-size: 11px; padding: 4px 6px; display: inline-block; margin-bottom: 4px; }
+.rowh small { display: block; color: var(--muted); font-weight: 600; font-size: 11px; }
+.board td.today { background: color-mix(in srgb, var(--today) 60%, var(--panel)); }
+.tile { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 0; overflow: hidden; margin-bottom: 6px; border-top: 4px solid var(--kc); }
+.tile.sched { border-style: dashed; border-top-style: solid; }
+.tile .th { aspect-ratio: 9/16; max-height: 150px; width: 100%; background: var(--past) center/cover no-repeat; }
+.tile .t { font-size: 11.5px; font-weight: 700; line-height: 1.2; padding: 5px 6px 2px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.tile .tm { font-size: 10.5px; color: var(--muted); padding: 0 6px 6px; font-weight: 600; display: flex; justify-content: space-between; gap: 4px; }
+.empty { color: var(--muted); font-size: 11px; font-style: italic; opacity: .6; }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 12px; align-items: center; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.ex { width: 26px; height: 16px; border-radius: 4px; border: 1.5px solid var(--muted); display: inline-block; }
+.ex.d { border-style: dashed; }
+
+/* Detail dialog */
+dialog { border: 0; padding: 0; border-radius: 16px; background: var(--panel); color: var(--ink); width: min(820px, calc(100vw - 32px)); max-height: calc(100vh - 40px); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(20,12,8,.55); }
+.dlg { display: grid; grid-template-columns: 240px minmax(0, 1fr); }
+.dlg .big { background: #000 center/contain no-repeat; min-height: 420px; }
+.dlg .info { padding: 18px 20px 20px; display: grid; gap: 14px; align-content: start; overflow-y: auto; max-height: calc(100vh - 40px); }
+.dlg h3 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; margin: 0; text-transform: uppercase; text-wrap: balance; }
+.kpill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--kt, var(--ink)); border: 1.5px solid currentColor; border-radius: 999px; padding: 3px 10px; }
+.where { display: grid; gap: 6px; }
+.where div { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--line); padding-bottom: 6px; font-variant-numeric: tabular-nums; }
+.where .p { font-size: 11px; padding: 4px 6px; text-align: center; }
+.st { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.st.sent { color: #2e8b57; } .st.scheduled { color: var(--muted); } .st.error { color: #c27c00; }
+.cap { white-space: pre-wrap; font-size: 12.5px; line-height: 1.5; color: var(--muted); background: var(--bg); border-radius: 10px; padding: 12px; max-height: 260px; overflow-y: auto; }
+.close { position: absolute; right: 10px; top: 10px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 18px; }
+
+/* Reporting */
+:root { --good: #24734a; --warn: #8f5c12; --track: #ece4da; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --good: #4cc38a; --warn: #e0a83a; --track: #322923; } }
+:root[data-theme="dark"] { --good: #4cc38a; --warn: #e0a83a; --track: #322923; }
+.report { display: grid; gap: 18px; border-top: 3px solid var(--ink); padding-top: 18px; }
+.report-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 20px; }
+.report-head h2 { font-size: 34px; }
+.report-head.sub-head { border-top: 3px solid var(--ink); padding-top: 18px; margin-top: 10px; }
+.src { color: var(--muted); font-size: 12px; max-width: 62ch; line-height: 1.45; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.panel h3 { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: 19px; letter-spacing: .02em; margin: 0 0 2px; }
+.panel .why { color: var(--muted); font-size: 12.5px; margin: 0 0 12px; max-width: 70ch; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.tile-k { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.tile-k .lab { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.tile-k .big { font-family: var(--display); font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile-k .big small { font-family: var(--body); font-size: 14px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+.tile-k .cmp { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.delta { font-weight: 800; }
+/* Arrows: up is always green, down is always red (Marshall 2026-11-10). */
+.delta.up { color: var(--good); } .delta.down { color: var(--t-red); }
+.goal { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 2px 8px; width: fit-content; }
+.goal.ok { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.goal.no { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+.rc { display: grid; gap: 0; }
+.rc-row { display: grid; grid-template-columns: 40px minmax(160px, 1.4fr) minmax(190px, 1.7fr) 80px 64px 80px 76px; gap: 12px; align-items: center;
+  padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; background: transparent; border-left: 0; border-right: 0; border-top: 0; width: 100%; }
+.rc-row.hd { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 0; }
+button.rc-row:hover { background: var(--bg); }
+.rc-row .th { width: 40px; height: 64px; border-radius: 6px; background: var(--past) center/cover no-repeat; }
+.rc-row .tt { font-weight: 700; font-size: 13px; line-height: 1.25; min-width: 0; }
+.rc-row .tt small { display: block; color: var(--muted); font-weight: 600; font-size: 11.5px; margin-top: 2px; }
+.chipb { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 4px; padding: 1px 4px; margin-left: 4px; color: var(--muted); }
+.chipb.live { color: var(--good); border-color: currentColor; }
+.num { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; text-align: right; }
+.bar { position: relative; height: 14px; background: var(--track); border-radius: 4px; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; background: var(--muted); min-width: 2px; }
+.bar i.good { background: var(--good); } .bar i.warn { background: var(--warn); }
+.bar .tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: .55; }
+.bar .tick.b { opacity: .3; }
+.barwrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; align-items: center; min-width: 0; }
+.verdict { font-size: 11px; font-weight: 800; white-space: nowrap; }
+.verdict.good { color: var(--good); } .verdict.warn { color: var(--warn); } .verdict.none { color: var(--muted); }
+.more { margin-top: 10px; border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 12.5px; }
+.scale-note { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.scale-note span { display: inline-flex; align-items: center; gap: 5px; }
+.scale-note i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+.fmt { display: grid; grid-template-columns: 120px minmax(0, 1fr) 46px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+.fmt .nm { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.fmt .nm .sw { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.fmt-meta { grid-column: 2 / -1; color: var(--muted); font-size: 11.5px; margin-top: -4px; }
+.weeks { display: flex; align-items: flex-end; gap: 6px; height: 170px; position: relative; padding-top: 10px; border-bottom: 1px solid var(--line); }
+.wk { flex: 1; display: flex; flex-direction: column-reverse; align-items: stretch; gap: 2px; height: 100%; position: relative; min-width: 0; }
+.wk .seg { border-radius: 4px 4px 0 0; }
+.wk .seg.p { background: var(--ink); }
+.wk .seg.s { background: repeating-linear-gradient(45deg, transparent 0 4px, color-mix(in srgb, var(--ink) 35%, transparent) 4px 6px); border: 1.5px dashed color-mix(in srgb, var(--ink) 55%, transparent); }
+.wk .seg + .seg { border-radius: 4px 4px 0 0; }
+.wk .n { text-align: center; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.wk.now .n { color: var(--t-red); }
+.wk .seg.sp { background: var(--k-story); }
+.wk .n.st { color: var(--kt-story); font-size: 10px; }
+/* Stories sit apart from the posts: a slimmer block above a small gap. */
+.wk .seg.sp, .wk .seg.ss { margin: 0 22%; }
+.wk .n:not(.st) { margin-bottom: 3px; }
+.wk .seg.ss { background: repeating-linear-gradient(45deg, transparent 0 4px, color-mix(in srgb, var(--k-story) 60%, transparent) 4px 6px); border: 1.5px dashed var(--k-story); }
+.stkey { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--k-story); vertical-align: -1px; margin-left: 2px; }
+.wklabels { display: flex; gap: 6px; margin-top: 4px; }
+.wklabels span { flex: 1; text-align: center; font-size: 10px; color: var(--muted); font-weight: 700; min-width: 0; overflow: hidden; white-space: nowrap; }
+.target-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--red); pointer-events: none; }
+.target-line span { position: absolute; right: 0; top: -18px; font-size: 10.5px; font-weight: 800; color: var(--t-red); background: var(--panel); padding: 0 4px; }
+.plats4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.pl { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; border-top: 4px solid var(--pc); }
+.pl .big { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.pl .lab { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.pl .s { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+@media (max-width: 760px) {
+  .rc-row { grid-template-columns: 40px minmax(0, 1fr) 70px; }
+  .rc-row > :nth-child(4), .rc-row > :nth-child(5), .rc-row > :nth-child(6), .rc-row > :nth-child(7) { display: none; }
+  .rc-row > :nth-child(3) { grid-column: 2 / -1; }
+  .rc-row.hd { display: none; }
+}
+
+.mo { overflow-x: auto; padding-top: 52px; } /* room for the projection label above the tallest bar */
+.mo-grid { display: grid; grid-template-columns: 110px repeat(var(--n), minmax(58px, 1fr)); min-width: calc(110px + var(--n) * 62px); align-items: end; }
+.mo-grid .rl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 6px 6px 6px 0; align-self: center; }
+.mo-col { display: flex; flex-direction: column-reverse; gap: 2px; height: 180px; padding: 0 5px; position: relative; }
+.mo-col { cursor: default; outline: none; }
+.mo-col:hover i, .mo-col:focus-visible i { filter: brightness(1.12); }
+.mo-col:focus-visible { box-shadow: 0 0 0 2px var(--red); border-radius: 6px; }
+.mo-col i { display: flex; align-items: center; justify-content: center; border-radius: 2px; min-height: 0; overflow: hidden;
+  font-style: normal; font-size: 10.5px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.mo-col i.dk { color: #111; text-shadow: none; }
+.mo-tip { position: fixed; z-index: 50; pointer-events: none; background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); padding: 10px 12px; font-size: 12px; min-width: 260px; }
+.mo-tip b.t { display: block; font-family: var(--display); font-weight: 400; font-size: 16px; text-transform: uppercase; margin-bottom: 6px; }
+.mo-tip table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.mo-tip th, .mo-tip td { padding: 3px 6px; text-align: right; white-space: nowrap; }
+.mo-tip th { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 800; }
+.mo-tip td:first-child, .mo-tip th:first-child { text-align: left; padding-left: 0; }
+.mo-tip tr.tot td { border-top: 1px solid var(--line); font-weight: 800; }
+.mo-tip .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.mo-col i:last-child { border-radius: 4px 4px 2px 2px; }
+.mo-cell { text-align: center; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 6px 2px; border-top: 1px solid var(--line); }
+.mo-cell.m { font-weight: 800; color: var(--muted); font-size: 11px; text-transform: uppercase; border-top: 0; }
+.glance-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.glance-head h3 { margin: 0; }
+.mo-cell.m small { display: block; font-size: 9px; letter-spacing: .04em; font-weight: 700; }
+/* The current month is still filling up: lighter bars with a dashed outline. */
+.mo-col.partial i { opacity: .55; outline: 1.5px dashed var(--muted); outline-offset: -1.5px; }
+.mo-col .proj-rise { position: absolute; left: 50%; width: 0; border-left: 2px dashed var(--muted); pointer-events: none; }
+.mo-col .proj { position: absolute; left: 5px; right: 5px; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; transform: translateY(-100%); padding-bottom: 3px;
+  font-size: 9.5px; font-weight: 700; color: var(--muted); line-height: 1.15; border-bottom: 2px dashed var(--ink); }
+.mo-col .proj b { font-size: 12px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.mo-tip .pnote { display: block; font-size: 11px; color: var(--muted); margin: -2px 0 6px; max-width: 340px; white-space: normal; }
+.mo-legend .more { margin: 0 0 0 auto; padding: 4px 12px; }
+.mo-cell.cur { color: var(--t-red); }
+.mo-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 10px; }
+.mo-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mo-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.plats4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) { .plats4 { grid-template-columns: minmax(0, 1fr); } }
+.per { display: grid; gap: 7px; margin-top: 8px; }
+.per-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 62px; grid-template-rows: auto auto; column-gap: 8px; align-items: center; }
+.per-l { font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.per-row.now .per-l { color: var(--ink); }
+.per-b { height: 10px; background: var(--track); border-radius: 3px; overflow: hidden; }
+.per-b i { display: block; height: 100%; background: color-mix(in srgb, var(--pc) 45%, var(--track)); border-radius: 0 3px 3px 0; }
+.per-row.now .per-b i { background: var(--pc); }
+.per-v { font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.per-hd { margin-bottom: -4px; }
+.per-hd .per-v { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.per-n { grid-column: 2 / -1; font-size: 10.5px; color: var(--muted); font-weight: 600; }
+
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.pager .more { margin-top: 0; }
+.pager .more:disabled { opacity: .4; cursor: default; }
+.pg { font-size: 12.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pgdots { display: flex; gap: 4px; margin-left: auto; }
+.pgdot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; font-size: 12px; font-weight: 800; }
+.pgdot.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.wk-now { font-size: 11.5px; font-weight: 700; color: var(--muted); padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.wk-now b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.wk-last { font-size: 12px; color: var(--muted); font-weight: 600; padding-top: 6px; margin-top: 2px; border-top: 1px dashed var(--line); }
+.wk-last b { color: var(--ink); }
+
+.wkview .day { min-height: 0; }
+.wkview .card { grid-template-columns: 1fr; gap: 5px; padding: 5px; border-left-width: 1px; border-top: 4px solid var(--kc); }
+.wkview .card .th { width: 100%; height: 96px; }
+.wkview .card .t { -webkit-line-clamp: 2; font-size: 12px; }
+.wkview .card .k { display: none; }
+.wkview .story { width: 32px; height: 32px; }
+@media (max-width: 760px) {
+  .wkview .day { min-height: 0; }
+  .wkview .dow { display: none; }
+  .wkview .card { grid-template-columns: 64px minmax(0, 1fr); }
+  .wkview .card .th { width: 64px; max-height: none; }
+}
+
+.sumwrap { overflow-x: auto; }
+.sum { width: 100%; border-collapse: collapse; min-width: 560px; font-variant-numeric: tabular-nums; }
+.sum th, .sum td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); }
+.sum thead th { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; vertical-align: bottom; }
+.sum thead th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.sum tbody th { font-size: 13px; font-weight: 800; white-space: nowrap; }
+.sum .sv { font-family: var(--display); font-size: 30px; line-height: 1; margin-right: 10px; }
+.sum .delta { font-size: 12.5px; white-space: nowrap; }
+.scell { display: flex; align-items: flex-end; gap: 4px; }
+.sd { display: flex; flex-direction: column; line-height: 1.2; }
+.sd small { font-size: 10.5px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.delta.flat { color: var(--muted); }
+.mut { color: var(--muted); font-weight: 600; }
+
+.shead { position: relative; display: block; }
+.sscale { position: relative; display: block; height: 14px; margin-top: 3px; }
+.slab { position: absolute; top: 0; transform: translateX(-50%); font-size: 9.5px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; color: var(--ink); text-transform: none; }
+.slab.b { color: var(--muted); transform: translateX(calc(-100% + 2px)); }
+.slab::after { content: ""; position: absolute; left: calc(50% - 1px); top: 13px; width: 2px; height: 6px; background: currentColor; }
+.slab.b::after { left: auto; right: 0; }
+.slab.l { transform: translateX(-1px); }
+.slab.l::after { left: 0; }
+#lgExplain { flex-basis: 100%; color: var(--ink); font-weight: 600; }
+
+.tgt-line { margin: -6px 0 10px; font-size: 12.5px; color: var(--ink); }
+.tgt-line a, .tgt-note a { color: var(--t-red); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.tgt-note { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 12.5px; line-height: 1.5; max-width: 80ch; }
+.tgt-note p { margin: 0 0 6px; } .tgt-note p:last-child { margin: 0; }
+
+.hdr-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.refreshbtn { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--ink); background: var(--panel); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 12.5px; }
+.refreshbtn:hover { background: var(--ink); color: var(--bg); }
+.refreshbtn .ri { display: inline-block; font-size: 15px; line-height: 1; }
+.refreshbtn.busy .ri { animation: spin .8s linear infinite; }
+.refreshbtn:disabled { cursor: progress; opacity: .7; }
+.lastref { font-size: 11.5px; color: var(--muted); font-weight: 600; max-width: 34ch; line-height: 1.3; }
+.lastref.bad { color: var(--t-red); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.chip.allbtn { border-style: dashed; color: var(--muted); }
+.chip.allbtn:hover { color: var(--ink); border-color: var(--ink); }
+
+/* Phone: month becomes an agenda list */
+@media (max-width: 760px) {
+  .dow { display: none; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .day { min-height: 0; border-right: 0; }
+  .day.out, .day.empty-day { display: none; }
+  .dlg { grid-template-columns: minmax(0, 1fr); }
+  .dlg .big { min-height: 280px; }
+  .months { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="badge"><img src="logo_white.png" alt="SZN Spice Company" width="200" height="141"></div>
+      <div>
+        <h1>SZN Content Calendar</h1>
+        <div class="sub" id="sub" data-team>Team view · last 3 days and the next 5 days · updated every morning</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <button class="refreshbtn" id="refreshBtn" title="Pull the latest posts from Buffer"><span class="ri" aria-hidden="true">&#x21bb;</span> <span class="rl">Refresh</span></button>
+      <span class="lastref" id="lastRef" role="status" aria-live="polite"></span>
+      <div class="seg" role="group" aria-label="Colour mode">
+        <button id="thLight" aria-pressed="false">Light</button>
+        <button id="thDark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="group"><span class="lbl">View</span>
+      <div class="seg" role="group" aria-label="View">
+        <button id="vWeek" aria-pressed="true">Week</button>
+        <button id="vMonth" aria-pressed="false">Month</button>
+      </div>
+    </div>
+    <div class="group" id="platChips"><span class="lbl">Platforms</span></div>
+    <div class="group" id="kindChips"><span class="lbl">Show</span></div>
+  </div>
+
+  <section id="main"></section>
+
+  <div class="legend">
+    <span><i class="ex"></i> Posted</span>
+    <span><i class="ex d"></i> Scheduled (dashed)</span>
+    <span><span class="p p-ig">IG</span> solid = live on that platform</span>
+    <span><span class="p p-ig sched">IG</span> dashed = waiting to post</span>
+    <span><span class="orig" style="position:static">ORIGINAL RECIPE</span> original recipe reel (not a repost or compilation)</span>
+    <span id="gen"></span>
+  </div>
+
+  <section class="report" id="report" aria-labelledby="repTitle">
+    <div class="report-head">
+      <h2 id="repTitle">How it's doing</h2>
+      <p class="src" id="repSrc">Boosts included. Instagram and Facebook from Meta, TikTok and YouTube from Buffer.</p>
+    </div>
+    <div class="panel sumpanel">
+      <div class="glance-head"><h3 id="repSumTitle">Instagram at a glance</h3>
+        <div class="seg" role="group" aria-label="Platform" id="repSumTabs"></div></div>
+      <p class="why" id="repSumWhy">Everything that happened on the account in each period, boosts included.</p>
+      <div class="sumwrap"><table class="sum" id="repSum"></table></div>
+    </div>
+    <div class="panel" id="repMonthlyPanel">
+      <h3>Month by month, every platform</h3>
+      <p class="why">From the SZN Social Media Tracking sheet. This month, marked "so far", comes from Meta and Buffer until the sheet fills it in.</p>
+      <div id="repMonthly"></div>
+    </div>
+    <div class="panel">
+      <h3>Instagram original recipe report card</h3>
+      <p class="why" id="repCardWhy">Instagram numbers for original recipe videos only, Jan 1 to today (no promos, compilations or reposts). Engagement rate = likes, comments, shares and saves ÷ views.</p>
+      <p class="tgt-line"><b>Target:</b> beat the food &amp; beverage average of 2.5%. <a href="#target-source" id="tgtLink">Where does this come from?</a></p>
+      <div class="tgt-note" id="target-source" hidden>
+        <p><b>Industry benchmark:</b> <a href="https://pages.dashsocial.com/hubfs/social-media-benchmark/2026/H1/instagram.pdf" target="_blank" rel="noopener">Dash Social’s 2026 Instagram Benchmark Report</a> (3,363 brands, July–December 2025, organic and boosted content) measures engagement rate as likes, comments, saves and shares ÷ views, the same way it’s measured here. Food &amp; beverage brands average <b>2.5%</b>. For comparison, Reels across all industries average 2.7%, and brands under 190K followers average 2.0%.</p>
+      </div>
+      <div class="rc" id="repReels"></div>
+      <div class="scale-note">
+        <span id="lgExplain">The bar shows each reel’s engagement rate. The dark line is the food &amp; beverage average (2.5%); the faint line is the average for brands under 190K followers (2.0%). Green beat the food &amp; beverage average, amber beat brands under 190K, grey fell short of both. Reels seen by fewer than 300 people aren't judged.</span>
+      </div>
+    </div>
+    <div class="panel" id="repBoostedPanel">
+      <h3>Currently boosted on Instagram</h3>
+      <p class="why" id="repBoostedWhy">Every Instagram post with a boost delivering now, recipes or not. Boost spend is everything spent boosting that post.</p>
+      <div class="rc" id="repBoosted"></div>
+    </div>
+    <div class="report-head sub-head">
+      <h2>What we're posting</h2>
+      <p class="src">Goals: 4 original recipes a week and 1 post a day (7 a week). From Buffer; posted Stories from Meta.</p>
+    </div>
+    <div class="two">
+      <div class="panel" hidden><!-- Which formats work: removed from view (Marshall 2026-11-10) -->
+        <h3>Which formats work</h3>
+        <p class="why" id="repFmtWhy">Instagram, typical post in each format.</p>
+        <div id="repFormats"></div>
+      </div>
+      <div class="panel">
+        <h3>Recipe videos per week</h3>
+        <p class="why">Instagram recipe reels. Solid = posted, dashed = scheduled.</p>
+        <div id="repWeeks"></div>
+        <h3 style="margin-top:22px">Posts per week</h3>
+        <p class="why">White number = posts (a post shared to several platforms counts once). <span class="stkey"></span> = Stories, stacked above with their own number. Solid = posted, dashed = scheduled.</p>
+        <div id="repPosts"></div>
+      </div>
+    </div>
+    <div class="panel" hidden><!-- Every platform: removed from view (Marshall 2026-11-10); At a glance covers each platform -->
+      <h3>Every platform, last 28 days vs before</h3>
+      <p class="why">Views on posts, in 28-day periods. Stories left out.</p>
+      <div class="plats4" id="repPlats"></div>
+    </div>
+  </section>
+</div>
+
+<dialog id="dlg"></dialog>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const DATA = window.SZN_DATA || { items: [], generated: "" };
+  let ITEMS = DATA.items;
+  const KINDS = {
+    reel:        { label: "Recipe reel",  color: "var(--k-reel)", text: "var(--kt-reel)" },
+    fuego:       { label: "Fuego Friday", color: "var(--k-fuego)", text: "var(--kt-fuego)" },
+    thisorthat:  { label: "This or That", color: "var(--k-thisorthat)", text: "var(--kt-thisorthat)" },
+    compilation: { label: "Compilation",  color: "var(--k-compilation)", text: "var(--kt-compilation)" },
+    longform:    { label: "Long form",    color: "var(--k-longform)", text: "var(--kt-longform)" },
+    repost:      { label: "Repost",       color: "var(--k-repost)", text: "var(--kt-repost)" },
+    promo:       { label: "Promo",        color: "var(--k-promo)", text: "var(--kt-promo)" },
+    graphic:     { label: "Graphic",      color: "var(--k-graphic)", text: "var(--kt-graphic)" },
+    story:       { label: "Story",        color: "var(--k-story)", text: "var(--kt-story)" },
+  };
+  const PLATS = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube", x: "X" };
+  const SHORT = { ig: "IG", fb: "FB", tt: "TT", yt: "YT", x: "X" };
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  const state = { view: "week", month: null, week: null, plats: new Set(Object.keys(PLATS)), kinds: new Set(Object.keys(KINDS)) };
+  try {
+    const saved = JSON.parse(localStorage.getItem("szn-cal-v2") || "{}");
+    if (saved.view) state.view = saved.view;
+    if (saved.kinds) state.kinds = new Set([...saved.kinds, ...Object.keys(KINDS).filter(k => !(saved.known || []).includes(k) && !["reel","fuego","thisorthat","compilation","longform","repost","graphic","story"].includes(k))]);
+    if (saved.plats) state.plats = new Set(saved.plats);
+  } catch (e) {}
+  // Light / dark toggle: remembered per browser; until one is picked the page follows the system setting.
+  (() => {
+    const root = document.documentElement, mq = matchMedia("(prefers-color-scheme: dark)");
+    const cur = () => root.dataset.theme || (mq.matches ? "dark" : "light");
+    const paint = () => { document.getElementById("thLight").setAttribute("aria-pressed", cur() === "light"); document.getElementById("thDark").setAttribute("aria-pressed", cur() === "dark"); };
+    const set = t => { root.dataset.theme = t; try { localStorage.setItem("szn-theme", t); } catch (e) {} paint(); };
+    document.getElementById("thLight").addEventListener("click", () => set("light"));
+    document.getElementById("thDark").addEventListener("click", () => set("dark"));
+    mq.addEventListener("change", paint);
+    paint();
+  })();
+  const save = () => { try { localStorage.setItem("szn-cal-v2", JSON.stringify({ view: state.view, kinds: [...state.kinds], plats: [...state.plats], known: Object.keys(KINDS) })); } catch (e) {} };
+
+  const pad = n => String(n).padStart(2, "0");
+  const iso = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const TODAY = iso(today);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const bg = it => it.thumb ? `style="background-image:url('${it.thumb}')"` : "";
+
+  const byDay = {};
+  ITEMS.forEach(it => (byDay[it.day] = byDay[it.day] || []).push(it));
+  const visible = it => state.kinds.has(it.kind) && it.posts.some(p => state.plats.has(p.platform));
+
+  function platPills(it) {
+    const seen = {};
+    it.posts.forEach(p => {
+      const cur = seen[p.platform];
+      if (!cur || p.status !== "sent") seen[p.platform] = p.status;
+    });
+    return `<span class="plats">${Object.keys(PLATS).filter(k => seen[k]).map(k =>
+      `<span class="p p-${k}${seen[k] === "sent" ? "" : " sched"}${seen[k] === "error" ? " err" : ""}" title="${PLATS[k]}: ${seen[k] === "sent" ? "posted" : seen[k]}">${SHORT[k]}</span>`).join("")}</span>`;
+  }
+  const sched = it => it.status === "posted" ? "" : " sched";
+  const firstTime = it => it.posts[0] ? it.posts[0].time : "";
+
+  /* Header totals */
+  function renderTotals() {
+    const nonStory = ITEMS.filter(i => i.kind !== "story");
+    const posted = nonStory.filter(i => i.status === "posted").length;
+    const queued = nonStory.filter(i => i.status !== "posted").length;
+    const lastQueued = nonStory.filter(i => i.status !== "posted").map(i => i.day).sort().pop();
+    const days = lastQueued ? Math.round((parse(lastQueued) - today) / 864e5) : 0;
+    const ppost = ITEMS.reduce((n, i) => n + i.posts.length, 0);
+
+    document.getElementById("gen").textContent = DATA.generated ? "Buffer data as of " + DATA.generated : "";
+  }
+
+  /* Filter chips */
+  function renderChips() {
+    const pc = document.getElementById("platChips");
+    const allBtn = (group, all) => `<button class="chip allbtn" data-all="${group}">${all ? "Deselect all" : "Select all"}</button>`;
+    pc.innerHTML = `<span class="lbl">Platforms</span>` + allBtn("plats", state.plats.size === Object.keys(PLATS).length) + Object.keys(PLATS).map(k =>
+      `<button class="chip" data-plat="${k}" aria-pressed="${state.plats.has(k)}"><span class="p p-${k}">${SHORT[k]}</span>${PLATS[k]}</button>`).join("");
+    const kc = document.getElementById("kindChips");
+    kc.innerHTML = `<span class="lbl">Show</span>` + allBtn("kinds", state.kinds.size === Object.keys(KINDS).length) + Object.keys(KINDS).map(k =>
+      `<button class="chip" data-kind="${k}" aria-pressed="${state.kinds.has(k)}"><span class="sw" style="background:${KINDS[k].color}"></span>${KINDS[k].label}</button>`).join("");
+    document.getElementById("vMonth").setAttribute("aria-pressed", state.view === "month");
+    document.getElementById("vWeek").setAttribute("aria-pressed", state.view === "week");
+  }
+
+  /* One calendar day: post cards, then story bubbles. Shared by the week and month views. */
+  function dayCell(d, out) {
+    const k = iso(d);
+    const list = (byDay[k] || []).filter(visible);
+    const posts = list.filter(i => i.kind !== "story");
+    const stories = list.filter(i => i.kind === "story");
+    const cls = ["day", out ? "out" : "", k === TODAY ? "today" : "", k < TODAY ? "past" : "", list.length ? "" : "empty-day"].join(" ");
+    const dayName = window.innerWidth <= 760 ? DOW[d.getDay()] + " " : "";
+    return `<div class="${cls}">
+        <div class="dnum"><span>${dayName}${d.getDate()}</span>${k === TODAY ? '<span class="tag">Today</span>' : ""}</div>
+        ${posts.map(it => `<button class="card${sched(it)}" data-id="${it.id}" style="--kc:${KINDS[it.kind].color};--kt:${KINDS[it.kind].text}">
+            <span class="th" ${bg(it)}>${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : ""}</span>
+            <span class="cbody"><span class="k">${it.kind === "reel" ? '<span class="orig inl" title="Original recipe reel">ORIGINAL RECIPE</span>' : KINDS[it.kind].label}</span><span class="t">${esc(it.title)}</span>${platPills(it)}</span>
+          </button>`).join("")}
+        ${stories.length ? `<div class="stories">${stories.slice(0, 6).map(it =>
+            `<button class="story${sched(it)}" data-id="${it.id}" title="Story: ${esc(it.title)}" aria-label="Story: ${esc(it.title)}"><i ${bg(it)}></i></button>`).join("")}
+            ${stories.length > 6 ? `<span class="n">+${stories.length - 6}</span>` : ""}<span class="n">${stories.length} ${stories.length === 1 ? "story" : "stories"}</span></div>` : ""}
+      </div>`;
+  }
+
+  /* Month view */
+  let allMonths = [...new Set(ITEMS.map(i => i.day.slice(0, 7)))].sort();
+  function renderMonth() {
+    const [y, m] = state.month.split("-").map(Number);
+    const first = new Date(y, m - 1, 1);
+    const start = new Date(first); start.setDate(1 - first.getDay());
+    const last = new Date(y, m, 0);
+    const end = new Date(last); end.setDate(last.getDate() + (6 - last.getDay()));
+    let cells = "";
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) cells += dayCell(d, d.getMonth() !== m - 1);
+    document.getElementById("main").innerHTML = `
+      <div class="navbar">
+        <button class="navbtn" data-nav="-1" aria-label="Previous month">‹</button>
+        <button class="navbtn" data-nav="1" aria-label="Next month">›</button>
+        <h2>${MONTHS[m - 1]} ${y}</h2>
+        <button class="todaybtn" data-nav="0">This month</button>
+        <div class="months">${allMonths.map(mm => { const [yy, mo] = mm.split("-").map(Number);
+          return `<button class="chip" data-month="${mm}" aria-pressed="${mm === state.month}">${MONTHS[mo - 1].slice(0, 3)}${yy !== today.getFullYear() ? " " + yy : ""}</button>`; }).join("")}</div>
+      </div>
+      <div class="cal"><div class="dow">${DOW.map(d => `<div>${d}</div>`).join("")}</div><div class="grid">${cells}</div></div>`;
+  }
+
+  /* Week view: the month view's day cells for one Sunday-to-Saturday week, with bigger cards */
+  function renderWeek() {
+    // Team view: 3 days back, today, 5 days ahead.
+    const days = [...Array(9)].map((_, i) => { const d = new Date(today); d.setDate(d.getDate() + i - 3); return d; });
+    const a = days[0], b = days[8];
+    document.getElementById("main").innerHTML = `
+      <div class="navbar"><h2>${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()} – ${MONTHS[b.getMonth()].slice(0, 3)} ${b.getDate()}</h2></div>
+      <div class="cal wkview team"><div class="dow">${days.map(d => `<div>${DOW[d.getDay()]} ${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}</div>`).join("")}</div>
+        <div class="grid">${days.map(d => dayCell(d, false)).join("")}</div></div>`;
+  }
+  function renderWeekFull() {
+    const days = [...Array(7)].map((_, i) => { const d = new Date(state.week); d.setDate(d.getDate() + i); return d; });
+    const a = days[0], b = days[6];
+    document.getElementById("main").innerHTML = `
+      <div class="navbar">
+        <button class="navbtn" data-wk="-1" aria-label="Previous week">‹</button>
+        <button class="navbtn" data-wk="1" aria-label="Next week">›</button>
+        <h2>${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()} – ${MONTHS[b.getMonth()].slice(0, 3)} ${b.getDate()}</h2>
+        <button class="todaybtn" data-wk="0">This week</button>
+      </div>
+      <div class="cal wkview"><div class="dow">${days.map(d => `<div>${DOW[d.getDay()]} ${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}</div>`).join("")}</div>
+        <div class="grid">${days.map(d => dayCell(d, false)).join("")}</div></div>`;
+  }
+
+  /* Detail dialog */
+  const dlg = document.getElementById("dlg");
+  function openItem(id) {
+    const it = ITEMS.find(i => i.id === id);
+    if (!it) return;
+    const d = parse(it.day);
+    const what = it.media === "video" ? (it.durationS ? `Video · ${it.durationS}s` : "Video")
+      : it.slides > 1 ? `Carousel · ${it.slides} slides` : it.media === "image" ? "Image" : "Text";
+    dlg.innerHTML = `<div class="dlg" style="--kc:${KINDS[it.kind].color};--kt:${KINDS[it.kind].text};position:relative">
+      <div class="big" ${it.thumb ? `style="background-image:url('${it.thumb}')"` : ""}></div>
+      <div class="info">
+        <div><span class="kpill">${KINDS[it.kind].label}</span> <span class="hint">${what}</span></div>
+        <h3>${esc(it.title)}</h3>
+        <div class="hint" style="font-weight:700">${DOW[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}</div>
+        <div class="where">${it.posts.map(p => `<div><span class="p p-${p.platform}">${PLATS[p.platform] || p.platform}</span>
+          <span>${new Date(p.iso).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${p.time}</span>
+          <span class="st ${p.status === "sent" ? "sent" : p.status}">${p.status === "sent" ? "Posted" : p.status}</span></div>`).join("")}</div>
+        ${it.caption ? `<div class="cap">${esc(it.caption)}</div>` : `<div class="hint">No caption (posted straight from the app).</div>`}
+      </div>
+      <button class="close" aria-label="Close">×</button></div>`;
+    dlg.showModal();
+  }
+  dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest(".close")) dlg.close(); });
+
+  function render() { state.view = "week";
+    renderChips();
+    state.view === "month" ? renderMonth() : renderWeek();
+  }
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.id) return openItem(t.dataset.id);
+    if (t.id === "vMonth" || t.id === "vWeek") { state.view = t.id === "vMonth" ? "month" : "week"; save(); return render(); }
+    if (t.dataset.all) {
+      // Select all / Deselect all for a filter group: all on unless everything is already on.
+      const keys = Object.keys(t.dataset.all === "plats" ? PLATS : KINDS);
+      const set = state[t.dataset.all];
+      const allOn = set.size === keys.length;
+      set.clear(); if (!allOn) keys.forEach(k => set.add(k));
+      save(); return render();
+    }
+    if (t.dataset.plat) { const k = t.dataset.plat; state.plats.has(k) ? state.plats.delete(k) : state.plats.add(k); save(); return render(); }
+    if (t.dataset.kind) { const k = t.dataset.kind; state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k); save(); return render(); }
+    if (t.dataset.month) { state.month = t.dataset.month; return render(); }
+    if (t.dataset.nav !== undefined) {
+      const n = +t.dataset.nav;
+      if (n === 0) state.month = iso(today).slice(0, 7);
+      else { const [y, m] = state.month.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); state.month = iso(d).slice(0, 7); }
+      return render();
+    }
+    if (t.dataset.wk !== undefined) {
+      const n = +t.dataset.wk;
+      if (n === 0) setWeek(today); else { const d = new Date(state.week); d.setDate(d.getDate() + 7 * n); state.week = d; }
+      return render();
+    }
+  });
+
+  function setWeek(d) { const w = new Date(d); w.setDate(w.getDate() - w.getDay()); state.week = w; }
+  state.month = iso(today).slice(0, 7);
+  setWeek(today);
+  let lastNarrow = window.innerWidth <= 760;
+  window.addEventListener("resize", () => { const n = window.innerWidth <= 760; if (n !== lastNarrow) { lastNarrow = n; render(); } });
+
+  /* Live refresh: pull every post from Buffer, regroup into calendar items, keep curated titles, types and thumbnails. */
+  const ORG = "698b6141967ad6859ce819df", BUF = "Buffer", TZ = "America/Toronto", CACHE = "szn-buffer-refresh-v3";
+  const PMAP = { instagram: "ig", facebook: "fb", tiktok: "tt", youtube: "yt", twitter: "x" };
+  const BASE_THUMB = Object.fromEntries(DATA.items.map(i => [i.id, i.thumb]));
+  const refreshBtn = document.getElementById("refreshBtn"), lastRef = document.getElementById("lastRef");
+  const fmtWhen = d => d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const genTs = (() => { const t = Date.parse(String(DATA.generated || "").replace(" at ", " ")); return isNaN(t) ? 0 : t; })();
+  let lastTs = genTs;
+  const showLast = () => { lastRef.classList.remove("bad"); lastRef.textContent = lastTs ? "Last refreshed " + fmtWhen(new Date(lastTs)) : (DATA.generated ? "Last refreshed " + DATA.generated : ""); document.getElementById("gen").textContent = ""; };
+  const say = (msg, bad) => { lastRef.textContent = msg; lastRef.classList.toggle("bad", !!bad); };
+  const dayOf = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  const timeOf = d => d.toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
+  const keyOf = t => String(t || "").replace(/FULL RECIPE BELOW\s*👇?/i, "").replace(/It['’]s Fuego Friday\s*🔥?\s*(Today we['’]re making)?/i, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "").slice(0, 30);
+  const isStoryText = t => !String(t || "").trim() || /^\w*\s*Story:|STICKER/i.test(t);
+  const titleCase = s => s === s.toUpperCase() ? s.toLowerCase().replace(/(^|\s)(\p{L})/gu, (m, a, b) => a + b.toUpperCase()) : s;
+  function deriveTitle(text, story) {
+    const t = String(text || "").trim();
+    if (!t) return story ? "Story" : "Untitled post";
+    const q = t.match(/STICKER[^"]*"([^"]+)"/i); if (q) return (/POLL/i.test(t) ? "Poll: " : "Question: ") + q[1];
+    const s = t.match(/Story:\s*([^.\n]+)/i); if (s) return s[1].trim();
+    let line = t.split("\n")[0].replace(/FULL RECIPE BELOW\s*👇?/i, "");
+    const f = line.match(/making (?:the )?([^.!]+)/i); if (/Fuego Friday/i.test(line) && f) line = f[1];
+    line = line.replace(/[^\p{L}\p{N}\s'’&,:?!\-]/gu, "").replace(/\s+/g, " ").trim().replace(/[.!]+$/, "");
+    return titleCase(line).slice(0, 90) || "Untitled post";
+  }
+  function guessKind(text, assets, story) {
+    if (story) return "story";
+    const t = String(text || "");
+    if (/fuego friday/i.test(t)) return "fuego";
+    if (/this or that/i.test(t)) return "thisorthat";
+    if (/^\s*\d+ things we put/i.test(t)) return "compilation";
+    if (/back by popular demand/i.test(t)) return "repost";
+    const vid = (assets || []).some(a => a.type === "video");
+    return vid ? "reel" : "graphic";
+  }
+  const reindex = () => {
+    for (const k in byDay) delete byDay[k];
+    ITEMS.forEach(it => (byDay[it.day] = byDay[it.day] || []).push(it));
+    allMonths = [...new Set(ITEMS.map(i => i.day.slice(0, 7)))].sort();
+  };
+  // Buffer answers with its JSON and a rate-limit note; pick out the object that holds the posts.
+  function pagesOf(res) {
+    const tryObj = v => v && typeof v === "object" && (v.edges || v.posts) ? v : null;
+    let hit = tryObj(res.payload) || tryObj(res.structuredContent);
+    if (hit) return hit;
+    const texts = (res.content || []).filter(b => b.type === "text").map(b => b.text);
+    if (typeof res.payload === "string") texts.unshift(res.payload);
+    for (const s of texts) {
+      let depth = 0, start = -1, inStr = false, esc2 = false;
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (inStr) { if (esc2) esc2 = false; else if (c === "\\") esc2 = true; else if (c === '"') inStr = false; continue; }
+        if (c === '"') inStr = true;
+        else if (c === "{") { if (!depth) start = i; depth++; }
+        else if (c === "}") { depth--; if (!depth && start >= 0) { try { const o = tryObj(JSON.parse(s.slice(start, i + 1))); if (o) return o; } catch (e) {} start = -1; } }
+      }
+    }
+    return null;
+  }
+  async function call(mcp, input) {
+    try { return await mcp.callTool(BUF, "list_posts", input, { cache: false }); }
+    catch (e) {
+      if (e && e.retryable) { await new Promise(r => setTimeout(r, Math.min(e.retryAfterMs || 1500, 15000) + Math.random() * 800)); return await mcp.callTool(BUF, "list_posts", input, { cache: false }); }
+      throw e;
+    }
+  }
+  async function fetchAll(mcp, start) {
+    const all = []; let after = null;
+    for (let i = 0; i < 40; i++) {
+      const input = { organizationId: ORG, first: 100, dueAt: { start }, status: ["scheduled", "sending", "sent", "error"], sort: [{ field: "dueAt", direction: "asc" }] };
+      if (after) input.after = after;
+      say(`Pulling from Buffer… ${all.length} posts so far`);
+      const pg = pagesOf(await call(mcp, input));
+      if (!pg) throw { code: "parse", message: "Buffer sent back something this page couldn't read." };
+      const nodes = pg.edges ? pg.edges.map(e => e.node) : pg.posts;
+      all.push(...nodes);
+      if (!pg.pageInfo || !pg.pageInfo.hasNextPage || !nodes.length) break;
+      after = pg.pageInfo.endCursor;
+    }
+    return all;
+  }
+  function rebuild(posts, start) {
+    // Always match against the published data, so a refresh can never compound an earlier bad one.
+    const BASE = DATA.items;
+    const byId = Object.fromEntries(BASE.map(i => [i.id, i]));
+    // Every Buffer post the published item was built from (reminders folded into a Story included).
+    BASE.forEach(i => (i.ids || []).forEach(pid => { byId[pid] = byId[pid] || i; }));
+    const HIDE = new Set(BASE.flatMap(i => i.hide || []));
+    const byPost = {}, byKey = {}, byTitle = {}, longDays = new Set();
+    BASE.forEach(i => { if (i.kind === "longform") longDays.add(i.day); });
+    const mins = s => Math.round(Date.parse(s) / 60000);
+    BASE.forEach(i => {
+      i.posts.forEach(q => { const m = mins(q.iso); if (!isNaN(m)) byPost[q.platform + "|" + m] = byPost[q.platform + "|" + m] || i; });
+      if (i.kind === "story" || i.kind === "longform") return;
+      const k = keyOf(i.caption || i.title);
+      byKey[i.day + "|" + k] = byKey[i.day + "|" + k] || i;
+      if (k && i.thumb) byTitle[k] = byTitle[k] || i;
+    });
+    // Same platform within a minute of the same time = the same post the calendar already knows.
+    const known = (p, when) => { const pl = PMAP[p.channelService] || p.channelService, m = Math.round(when / 60000);
+      return byId[p.id] || byPost[pl + "|" + m] || byPost[pl + "|" + (m - 1)] || byPost[pl + "|" + (m + 1)] || null; };
+    const groups = new Map();
+    posts.forEach(p => {
+      const when = new Date(p.sentAt || p.dueAt);
+      if (isNaN(when)) return;
+      const ex = known(p, when);
+      // Long-form YouTube uploads already come from YouTube itself; skip Buffer's copy of them.
+      if (!ex && p.channelService === "youtube" && longDays.has(dayOf(when))) return;
+      const story = ex ? ex.kind === "story" : isStoryText(p.text);
+      const k = ex ? "x:" + ex.id : story ? "s:" + p.id : dayOf(when) + "|" + keyOf(p.text);
+      if (!groups.has(k)) groups.set(k, { ex, story, list: [] });
+      groups.get(k).list.push({ p, when });
+    });
+    const claimed = new Set(), out = [];
+    for (const [k, g] of groups) {
+      g.list.sort((a, b) => a.when - b.when);
+      const day = dayOf(g.list[0].when);
+      let ex = g.ex;
+      if (!ex && !g.story && byKey[k] && !claimed.has(byKey[k].id)) ex = byKey[k];
+      if (ex) claimed.add(ex.id);
+      const lead = g.list.find(x => x.p.text) || g.list[0];
+      const assets = (g.list.find(x => (x.p.assets || []).length) || g.list[0]).p.assets || [];
+      const vid = assets.find(a => a.type === "video");
+      const posts2 = g.list.filter(({ p }) => !HIDE.has(p.id)).map(({ p, when }) => ({ platform: PMAP[p.channelService] || p.channelService, status: p.status === "sent" ? "sent" : p.status === "error" ? "error" : "scheduled", time: timeOf(when), iso: when.toISOString(), error: p.error ? (p.error.message || String(p.error)) : null }));
+      const status = posts2.every(x => x.status === "sent") ? "posted" : "scheduled";
+      let base = ex;
+      if (!base) {
+        const twin = !g.story && byTitle[keyOf(lead.p.text)];
+        base = twin ? { ...twin, id: g.list[0].p.id } : {
+          id: g.list[0].p.id, kind: vid && vid.video && vid.video.durationMs >= 90000 ? "longform" : guessKind(lead.p.text, assets, g.story), title: deriveTitle(lead.p.text, g.story),
+          media: vid ? "video" : assets.length ? "image" : "text", slides: vid ? 0 : assets.length, durationS: vid && vid.video ? Math.round((vid.video.durationMs || 0) / 1000) : 0,
+          thumb: assets[0] ? (assets[0].thumbnail || assets[0].source || "") : ""
+        };
+      }
+      out.push({ ...base, day, status, posts: posts2, caption: (ex && ex.caption) || lead.p.text || base.caption || "", first: g.list[0].when.toISOString() });
+    }
+    // Keep what Buffer doesn't hold (long-form YouTube, anything before the window) and posted items it didn't return.
+    BASE.forEach(i => { if (claimed.has(i.id)) return; if (i.kind === "longform" || String(i.id).startsWith("yt_") || i.day < start.slice(0, 10) || i.status === "posted") out.push(i); });
+    return out.sort((a, b) => (a.first || a.day).localeCompare(b.first || b.day));
+  }
+  function saveCache(ts) {
+    try { localStorage.setItem(CACHE, JSON.stringify({ ts, items: ITEMS.map(i => ({ ...i, thumb: String(i.thumb || "").startsWith("data:") ? null : i.thumb })) })); } catch (e) {}
+  }
+  // A refresh done earlier in this browser stays until the published data is newer.
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE) || "null");
+    if (c && c.ts > genTs && Array.isArray(c.items)) { ITEMS = c.items.map(i => ({ ...i, thumb: i.thumb == null ? (BASE_THUMB[i.id] || "") : i.thumb })); lastTs = c.ts; reindex(); }
+  } catch (e) {}
+  const errText = (e, nm) => {
+    nm = nm || (e && e.server) || "Buffer";
+    switch (e && e.code) {
+      case "needs_reauth": return nm + " needs reconnecting: claude.ai Settings \u2192 Connectors.";
+      case "server_not_connected": case "server_not_found": return "Add the " + nm + " connector in claude.ai Settings \u2192 Connectors.";
+      case "selection_required": return "Pick which " + nm + " connector to use when Claude asks, then refresh.";
+      case "not_in_manifest": case "approval_required": case "consent_required": return nm + " access wasn't allowed for this page. Allow it when asked, then refresh.";
+      case "blocked_by_policy": return "Your organization blocks this " + nm + " tool here.";
+      case "not_granted": case "capability_disabled": case "capability_removed": return "Live refresh only works with the page open in Claude.";
+      case "server_unavailable": return nm + " didn't answer. Try again in a minute.";
+      default: return nm + " refresh failed: " + ((e && e.message) || "unknown error").slice(0, 120);
+    }
+  };
+  window.__sznErrText = errText;
+  let mcpP = null;
+  try { mcpP = window.claude && window.claude.use ? window.claude.use("mcp") : null; } catch (e) {}
+  refreshBtn.addEventListener("click", async () => {
+    const b = refreshBtn;
+    b.disabled = true; b.classList.add("busy"); b.querySelector(".rl").textContent = "Refreshing…";
+    try {
+      const mcp = mcpP ? await mcpP : null;
+      if (!mcp) throw { code: "not_granted" };
+      const startDay = DATA.items.filter(i => i.kind !== "longform").map(i => i.day).sort()[0] || iso(today);
+      const start = startDay + "T00:00:00Z";
+      const posts = await fetchAll(mcp, start);
+      if (!posts.length) throw { code: "empty", message: "Buffer returned no posts, so nothing was changed." };
+      ITEMS = rebuild(posts, start);
+      reindex();
+      lastTs = Date.now();
+      saveCache(lastTs);
+      renderTotals();
+      render();
+      showLast();
+      // Then the parts of "How it's doing" that Buffer and the tracking sheet can supply.
+      if (window.__sznReportRefresh) {
+        b.querySelector(".rl").textContent = "Updating report\u2026";
+        const errs = await window.__sznReportRefresh(mcp, ITEMS, say);
+        showLast();
+        if (errs.length) say(lastRef.textContent + ". Report: " + errs.join(" "), true);
+      }
+    } catch (e) {
+      say(errText(e), true);
+    } finally {
+      b.disabled = false; b.classList.remove("busy"); b.querySelector(".rl").textContent = "Refresh";
+    }
+  });
+
+  renderTotals();
+  render();
+  showLast();
+  window.__sznOpenItem = openItem;
+})();
+</script>
+<script src="report.js"></script>
+<script>
+(function () {
+  const R = window.SZN_REPORT;
+  const DATA = window.SZN_DATA || { items: [] };
+  const root = document.getElementById("report");
+  if (!R) { root.hidden = true; return; }
+  const byId = Object.fromEntries(DATA.items.map(i => [i.id, i]));
+  // Reels with a boost running right now (Ads Manager, ad delivery Active). report.js can supply activeBoosts {asOf, ids}; otherwise this list is used.
+  const AB = R.activeBoosts || { asOf: "Nov 9, 2026, 10 AM", ids: ["6ae8d6fa87c5ea7cde553d2a", "6ae141ce21e984edd69917af", "6ae0fdaabdb7bfdd3421ba8b", "6ad24eb14d27181b194f9468", "6ac9553d47aa991bdb37847f"] };
+  const ACTIVE = new Set(AB.ids || []); let ACTIVE_ASOF = AB.asOf || "";
+  (R.boosted || []).forEach(b => { if (b.id) ACTIVE.add(b.id); });
+  const T = R.targets;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmt = n => n == null ? "–" : Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dshort = s => { const [y, m, d] = s.split("-").map(Number); return MONTHS[m - 1] + " " + d; };
+  const KIND = { reel: ["Recipe reels", "var(--k-reel)"], otherReel: ["Other reels", "var(--k-repost)"], fuego: ["Fuego Friday", "var(--k-fuego)"], thisorthat: ["This or That", "var(--k-thisorthat)"],
+    compilation: ["Compilations", "var(--k-compilation)"], repost: ["Reposts", "var(--k-repost)"], graphic: ["Graphics", "var(--k-graphic)"], promo: ["Promo", "var(--k-promo)"], longform: ["Long form", "var(--k-longform)"] };
+
+  document.getElementById("repSrc").textContent += " Updated " + R.generated + ".";
+
+  /* Tiles: last 28 days vs the 28 before */
+  const c = R.tiles.cur, p = R.tiles.prev;
+  // Same four numbers twice: the last 28 days vs the 28 before, and this calendar week vs last week.
+  const delta = (a, b, label) => {
+    if (a == null || b == null || b === 0) return "";
+    const d = a - b, pct = Math.round(100 * d / b);
+    return `<span class="delta ${d >= 0 ? "up" : "down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(pct)}%</span> vs ${fmt(b)} ${label}`;
+  };
+  const money0 = n => n ? "$" + Math.round(n).toLocaleString() : "$0";
+  /* At a glance: one table, three periods, each with its arrow. A toggle switches platforms;
+     the page always opens on Instagram. */
+  (function () {
+    const ALL = R.summaries || (R.summary ? { ig: R.summary } : {});
+    const box = document.getElementById("repSum");
+    if (!ALL.ig) { box.closest(".panel").hidden = true; return; }
+    const md = s => { const [y, m, d] = s.split("-").map(Number); return MONTHS[m - 1] + " " + d; };
+    const NAMES = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube Shorts" };
+    const order = ["ig", "fb", "yt", "tt"].filter(k => ALL[k]);
+    const why = (k, S) => k === "ig" ? `What happened on the account, boosts included. Meta's numbers run through ${md(S.asOf)}.`
+      : k === "fb" ? `What happened on the Facebook page, boosts included. Meta's numbers run through ${md(S.asOf)}.`
+      : k === "yt" ? `Views and interactions (likes, comments, shares) on the Shorts posted in each period, from Buffer; new subscribers from YouTube Studio (it shows the last 28 days). Through ${md(S.asOf)}.`
+      : `Views and interactions (likes, comments, shares) on the TikTok posts published in each period, from Buffer, through ${md(S.asOf)}. TikTok Studio only gives follower counts for the last 28 days.`;
+    const val = (key, n, approx) => key === "spend" ? money0(n) : approx && n >= 10000 ? (n / 1000).toFixed(1) + "K" : fmt(Math.round(n));
+    const cell = (key, x, approx) => {
+      if (!x || x.v == null) return `<td><span class="sv">–</span></td>`;
+      if (x.prev == null) return `<td><div class="scell"><span class="sv">${val(key, x.v, approx)}</span></div></td>`;
+      const d = x.prev ? Math.round(100 * (x.v - x.prev) / x.prev) : null;
+      const good = d >= 0;
+      return `<td><div class="scell"><span class="sv">${val(key, x.v, approx)}</span><span class="sd"><small>was ${val(key, x.prev, approx)}</small>${d == null ? "" : `<span class="delta ${good === null ? "flat" : good ? "up" : "down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d)}%</span>`}</span></div></td>`;
+    };
+    const tabs = document.getElementById("repSumTabs");
+    function show(k) {
+      const S = ALL[k];
+      const cols = [
+        ["week", "This week so far", `${md(S.ranges.week[0])}–${md(S.ranges.week[1])}`, "vs same days last week"],
+        ["lastWeek", "Last week", `${md(S.ranges.lastWeek[0])}–${md(S.ranges.lastWeek[1])}`, "vs the week before"],
+        ["d28", "Last 28 days", `${md(S.ranges.d28[0])}–${md(S.ranges.d28[1])}`, "vs the 28 days before"],
+      ];
+      box.innerHTML = `<thead><tr><th></th>${cols.map(([, t, r, vs]) => `<th>${t}<small>${r} · ${vs}</small></th>`).join("")}</tr></thead>
+        <tbody>${S.rows.map(row => `<tr><th>${row.label}</th>${cols.map(([c]) => cell(row.key, row[c], row.approx)).join("")}</tr>`).join("")}</tbody>`;
+      document.getElementById("repSumTitle").textContent = `${NAMES[k]} at a glance`;
+      document.getElementById("repSumWhy").textContent = why(k, S);
+      tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.gl === k));
+    }
+    tabs.innerHTML = order.map(k => `<button data-gl="${k}" aria-pressed="false">${{ ig: "Instagram", fb: "Facebook", yt: "YouTube", tt: "TikTok" }[k]}</button>`).join("");
+    tabs.addEventListener("click", e => { const b = e.target.closest("button[data-gl]"); if (b) show(b.dataset.gl); });
+    show("ig");
+  })();
+
+  /* Month by month (from the tracking sheet) */
+  (function () {
+    let ALL = R.monthly || [];
+    const panel = document.getElementById("repMonthlyPanel");
+    if (!ALL.length) { panel.hidden = true; return; }
+    // Last 8 months by default; the button shows the whole history.
+    const SHOW = 8;
+    let showAll = false, M = ALL;
+    const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const lab = m => { const [y, mo] = m.split("-").map(Number); return MN[mo - 1] + (mo === 1 || m === M[0].month ? " " + String(y).slice(2) : ""); };
+    const dd = s => { const [, mo, d] = s.split("-").map(Number); return MN[mo - 1] + " " + d; };
+    const PL = [["ig", "Instagram", "var(--ig)"], ["fb", "Facebook", "var(--fb)"], ["yt", "YouTube", "var(--yt)"], ["tt", "TikTok", "var(--tt)"]];
+    const H = 180;
+    const curM = new Date().toISOString().slice(0, 7);
+    const money = n => n == null ? "–" : "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: n < 10 ? 2 : 0, minimumFractionDigits: n < 10 ? 2 : 0 });
+    const k = n => n == null ? "–" : n >= 1000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1) + "K" : String(Math.round(n));
+    function draw() {
+    M = showAll ? ALL : ALL.slice(-SHOW);
+    const vmax = Math.max(...M.map(m => Math.max((m.total || {}).views || 0, (m.projected || {}).views || 0)));
+    // This month's projection: a dashed line rising from the top of the bar to where the month
+    // should land at the current daily pace, with the projected total above it.
+    const proj = m => { const p = (m.projected || {}).views; if (!m.partial || !p) return "";
+      const top = (H - 8) * ((m.total || {}).views || 0) / vmax, end = (H - 8) * p / vmax;
+      return `<span class="proj-rise" style="bottom:${top}px;height:${Math.max(0, end - top)}px"></span><span class="proj" style="bottom:${end}px"><b>≈ ${k(p)}</b>projected</span>`; };
+    // Each platform's views sit inside its slice of the bar when there's room; hover or focus a bar for the full breakdown.
+    const cols = M.map((m, i) => `<div class="mo-col${m.partial ? " partial" : ""}" tabindex="0" data-mi="${i}" aria-label="${lab(m.month)}${m.partial ? " so far" : ""}: ${PL.map(([key, nm]) => nm + " " + fmt((m[key] || {}).views) + " views").join(", ")}">
+        ${PL.map(([key, , col]) => { const v = (m[key] || {}).views || 0; const hpx = (H - 8) * v / vmax;
+          return v ? `<i class="${key === "tt" ? "dk" : ""}" style="background:${col};height:${hpx}px">${hpx >= 15 ? k(v) : ""}</i>` : ""; }).join("")}${proj(m)}</div>`).join("");
+    const row = (name, f, cls) => `<span class="rl">${name}</span>` + M.map(m => `<span class="mo-cell ${cls || ""}${m.month === curM ? " cur" : ""}">${f(m)}</span>`).join("");
+    document.getElementById("repMonthly").innerHTML = `<div class="mo"><div class="mo-grid" style="--n:${M.length}">
+        <span class="rl">Views</span>${cols}
+        ${row("", m => lab(m.month) + (m.partial ? `<small>so far</small>` : ""), "m")}
+        ${row("Total views", m => k((m.total || {}).views))}
+        ${row("New followers", m => fmt((m.total || {}).newFollowers))}
+        ${row("Ad spend", m => money((m.total || {}).spend))}
+        ${row("Cost / follower", m => money((m.total || {}).costPerFollower))}
+      </div></div>
+      <div class="mo-legend">${PL.map(([, nm, col]) => `<span><i style="background:${col}"></i>${nm}</span>`).join("")}<span>Hover or tap a bar for each platform's numbers</span>
+        ${ALL.length > SHOW ? `<button class="more" id="moAll">${showAll ? `Last ${SHOW} months` : `Show all ${ALL.length} months`}</button>` : ""}</div>`;
+
+    }
+    draw();
+    window.__sznMonthlyRedraw = () => { ALL = R.monthly || []; panel.hidden = !ALL.length; if (ALL.length) draw(); };
+    const tip = document.createElement("div");
+    tip.className = "mo-tip"; tip.hidden = true; document.body.appendChild(tip);
+    const cell = (o, key) => o && o[key] != null ? (key === "spend" ? money(o[key]) : fmt(o[key])) : "–";
+    const show = (el, x, y) => {
+      const m = M[+el.dataset.mi];
+      tip.innerHTML = `<b class="t">${MN[+m.month.slice(5) - 1]} ${m.month.slice(0, 4)}${m.partial ? " so far" : ""}</b>${m.partial ? `<span class="pnote">Through ${m.asOf ? dd(m.asOf) : "yesterday"}. The tracking sheet fills in the full month; until then Instagram comes from Meta and the other platforms from this month's posts.${m.projected ? ` At this pace the month ends near <b>${fmt(m.projected.views)} views</b>, ${fmt(m.projected.newFollowers)} new followers and ${money(m.projected.spend)} ad spend.` : ""}</span>` : ""}
+        <table><tr><th>Platform</th><th>Views</th><th>New followers</th><th>Interactions</th><th>Ad spend</th></tr>
+        ${PL.map(([key, nm, col]) => `<tr><td><span class="sw" style="background:${col}"></span>${nm}</td><td>${cell(m[key], "views")}</td><td>${cell(m[key], "newFollowers")}</td><td>${cell(m[key], "interactions")}</td><td>${cell(m[key], "spend")}</td></tr>`).join("")}
+        <tr class="tot"><td>Total</td><td>${cell(m.total, "views")}</td><td>${cell(m.total, "newFollowers")}</td><td>${cell(m.total, "interactions")}</td><td>${cell(m.total, "spend")}</td></tr></table>`;
+      tip.hidden = false;
+      const r = tip.getBoundingClientRect();
+      tip.style.left = Math.max(8, Math.min(window.innerWidth - r.width - 8, x + 14)) + "px";
+      tip.style.top = Math.max(8, Math.min(window.innerHeight - r.height - 8, y - r.height - 12)) + "px";
+    };
+    const box = document.getElementById("repMonthly");
+    box.addEventListener("mousemove", e => { const c = e.target.closest(".mo-col"); if (c) show(c, e.clientX, e.clientY); else tip.hidden = true; });
+    box.addEventListener("mouseleave", () => { tip.hidden = true; });
+    box.addEventListener("focusin", e => { const c = e.target.closest(".mo-col"); if (c) { const r = c.getBoundingClientRect(); show(c, r.right, r.top + 40); } });
+    box.addEventListener("focusout", () => { tip.hidden = true; });
+    box.addEventListener("click", e => {
+      if (e.target.closest("#moAll")) { showAll = !showAll; tip.hidden = true; draw(); return; }
+      const c = e.target.closest(".mo-col"); if (c) { const r = c.getBoundingClientRect(); show(c, r.right, r.top + 40); } });
+  })();
+
+  /* Reel report card */
+  const maxS = Math.max((T.sends || 1) * 1.4, ...R.reels.map(r => r.shares || 0));
+  const pctOf = v => Math.min(100, 100 * v / maxS);
+  const PAGE = 6; let page = 0;
+  // Engagement rate (interactions ÷ views, boosts included) against the food & beverage average.
+  const TARGET = 2.5, SCALE = 5; // bar runs 0–5%
+  const SMALL = 2.0; // average for brands under 190K followers (same report)
+  const rate = r => r.bench && r.igViews ? 100 * (r.interactions || 0) / r.igViews : null;
+  const share = r => r.bench ? rate(r) / TARGET : null;
+  function verdict(r) {
+    if (r.fresh) return ["none", "Too new (under 48 h)"];
+    if (r.igViews == null) return ["none", "No Meta numbers yet (next refresh)"];
+    const s = share(r);
+    if (s == null) return ["none", "Too few viewers to judge"];
+    const small = rate(r) >= SMALL;
+    return [s >= 1 ? "good" : small ? "warn" : "none", s >= 1 ? "✓ beat food & bev avg" : small ? "beat brands under 190K" : "below both averages"];
+  }
+  document.getElementById("tgtLink").addEventListener("click", e => {
+    e.preventDefault();
+    const n = document.getElementById("target-source");
+    n.hidden = !n.hidden;
+    e.currentTarget.textContent = n.hidden ? "Where does this come from?" : "Hide";
+  });
+  const MARK = 100 * TARGET / SCALE; // where the industry average sits on every bar (% of bar width)
+  const MARK2 = 100 * SMALL / SCALE;
+  // One report-card row; the boosted card uses the same layout with its budget under the date.
+  function reelRow(r, boosted) {
+      const it = byId[r.id] || {};
+      const [vc, vt] = verdict(r);
+      const s = share(r);
+      const cls = s == null ? "" : s >= 1 ? "good" : rate(r) >= SMALL ? "warn" : "";
+      const w = s == null ? 0 : Math.min(100, 100 * rate(r) / SCALE);
+      const bar = `<div class="bar" title="${fmt(r.interactions)} likes, comments, shares and saves on ${fmt(r.igViews)} views = ${s == null ? "–" : rate(r).toFixed(1) + "%"}"><i class="${cls}" style="width:${w}%"></i>
+          ${r.bench ? `<span class="tick b" style="left:${MARK2}%"></span><span class="tick" style="left:${MARK}%"></span>` : ""}</div>`;
+
+      const th = r.thumb || it.thumb;
+      return `<button class="rc-row"${r.id ? ` data-open="${r.id}"` : ""}>
+        <span class="th" ${th ? `style="background-image:url('${th}')"` : ""}></span>
+        <span class="tt">${esc(r.title)}<small>${r.day ? dshort(r.day) : ""}${r.day && r.day.slice(0, 4) !== String(new Date().getFullYear()) ? " " + r.day.slice(0, 4) : ""}${!boosted && ACTIVE.has(r.id) ? `<span class="chipb live" title="Boost running or starting in Ads Manager as of ${ACTIVE_ASOF}">Currently boosted</span>` : ""}${boosted ? `<span class="chipb">${r.kind === "reel" ? (r.original ? "Original recipe" : "Reel") : (KIND[r.kind] ? KIND[r.kind][0] : r.kind)}</span>` : r.kind !== "reel" ? `<span class="chipb">${KIND[r.kind] ? KIND[r.kind][0] : r.kind}</span>` : ""}</small></span>
+        <span class="barwrap">${bar}<span class="verdict ${vc}">${s != null ? `${rate(r).toFixed(1)}% · ${vt}` : vt}</span></span>
+        <span class="num"${r.src === "buffer" ? ' title="From Buffer: organic views plus boost views"' : ""}>${fmt(r.igViews)}</span>
+        <span class="num">${fmt(r.followsTotal)}</span>
+        <span class="num">${r.spend ? "$" + Math.round(r.spend).toLocaleString() : `<span class="mut">–</span>`}</span>
+        <span class="num">${r.spend && r.followsTotal ? "$" + (r.spend / r.followsTotal).toFixed(2) : `<span class="mut">–</span>`}</span></button>`;
+  }
+  function renderBoosted() {
+    const B = R.boosted || [];
+    const panel = document.getElementById("repBoostedPanel");
+    if (!B.length) { panel.hidden = true; return; }
+    const head = `<div class="rc-row hd"><span></span><span>Post</span><span class="shead">Engagement rate
+        <span class="sscale"><span class="slab b" style="left:${MARK2}%">Brands &lt;190K 2.0%</span><span class="slab l" style="left:${MARK}%">Food &amp; bev 2.5%</span></span></span><span class="num">Views</span><span class="num">Follows</span><span class="num">Boost spend</span><span class="num">$ / follow</span></div>`;
+    document.getElementById("repBoosted").innerHTML = head + B.map(r => reelRow(r, true)).join("");
+  }
+  renderBoosted();
+  function renderReels() {
+    const pages = Math.max(1, Math.ceil(R.reels.length / PAGE));
+    page = Math.min(page, pages - 1);
+    const list = R.reels.slice(page * PAGE, page * PAGE + PAGE);
+    const head = `<div class="rc-row hd"><span></span><span>Reel</span><span class="shead">Engagement rate
+        <span class="sscale"><span class="slab b" style="left:${MARK2}%">Brands &lt;190K 2.0%</span><span class="slab l" style="left:${MARK}%">Food &amp; bev 2.5%</span></span></span><span class="num">Views</span><span class="num">Follows</span><span class="num">Boost spend</span><span class="num">$ / follow</span></div>`;
+    const rows = list.map(r => reelRow(r, false)).join("");
+    document.getElementById("repReels").innerHTML = head + rows +
+      (pages > 1 ? `<div class="pager">
+        <button class="more" data-pg="-1" ${page === 0 ? "disabled" : ""}>‹ Newer</button>
+        <span class="pg">${page * PAGE + 1}–${Math.min(R.reels.length, page * PAGE + PAGE)} of ${R.reels.length} this year</span>
+        <button class="more" data-pg="1" ${page >= pages - 1 ? "disabled" : ""}>Older ›</button>
+        <span class="pgdots">${[...Array(pages)].map((_, k) => `<button class="pgdot${k === page ? " on" : ""}" data-goto="${k}" aria-label="Page ${k + 1}">${k + 1}</button>`).join("")}</span></div>` : "");
+  }
+  renderReels();
+  if (T.usual != null) {
+  }
+  root.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.pg || b.dataset.goto) {
+      page = b.dataset.goto != null ? +b.dataset.goto : page + +b.dataset.pg;
+      renderReels();
+      document.getElementById("repReels").scrollIntoView({ block: "nearest" });
+    }
+    else if (b.dataset.open && window.__sznOpenItem) window.__sznOpenItem(b.dataset.open);
+  });
+
+  /* Formats: typical post in each format, all measured the same way (Meta, boosts included).
+     Formats with fewer than 3 posts are listed but not ranked, since one post can't show a pattern. */
+  if (R.formatsSince) document.getElementById("repFmtWhy").textContent = `Instagram since ${dshort(R.formatsSince)}, boosts included. Shares for the typical post in each format.`;
+  const ranked = R.formats.filter(f => f.posts >= 3), few = R.formats.filter(f => f.posts < 3);
+  const fmax = Math.max(1, ...ranked.map(f => f.shares || 0));
+  const fmtRow = (f, small) => {
+    const [nm, col] = KIND[f.kind] || [f.kind, "var(--muted)"];
+    const w = small ? 0 : Math.min(100, 100 * (f.shares || 0) / fmax);
+    return `<div class="fmt"><span class="nm"><span class="sw" style="background:${col}"></span>${nm}</span>
+      <div class="bar" title="${fmt(f.shares)} shares on the typical post">${small ? "" : `<i style="width:${w}%;background:${col}"></i>`}</div>
+      <span class="num">${small ? "–" : fmt(f.shares)}</span>
+      <span class="fmt-meta">${f.posts} post${f.posts === 1 ? "" : "s"}${f.boosted != null ? ` (${f.boosted} boosted)` : ""} · ${fmt(f.views)} views · ${fmt(f.saves)} saves · ${fmt(f.follows)} follows${small ? " · too few posts to judge" : ""}</span></div>`;
+  };
+  document.getElementById("repFormats").innerHTML = ranked.map(f => fmtRow(f, false)).join("")
+    + (few.length ? `<p class="why" style="margin:10px 0 2px">Too few posts to compare yet:</p>` + few.map(f => fmtRow(f, true)).join("") : "")
+    + (R.stories.posts ? `<p class="why" style="margin:10px 0 0">Stories: ${R.stories.posts} posted, ${fmt(R.stories.medianViews)} views each (middle value).</p>` : "");
+
+  /* Weeks: recipe videos, then every post (with the week's Stories as a small ring) */
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const H = 140;
+  function weekBars(id, get, goal, noun) {
+    // The 14 most recent weeks: this week, the ones before it and the scheduled weeks ahead.
+    const W = R.weeks.slice(-14);
+    const tot = w => get(w).reduce((x, y) => x + y, 0);
+    const wmax = Math.max(goal ? goal + 1 : 1, ...W.map(tot));
+    document.getElementById(id).innerHTML = `<div class="weeks" style="height:${H + 30 + (noun ? 16 : 0)}px">
+      ${goal ? `<div class="target-line" style="bottom:${H * goal / wmax}px"><span>Goal ${goal}</span></div>` : ""}
+      ${W.map(w => {
+        const [p, s, sp = 0, ss = 0] = get(w);
+        const end = new Date(w.start); end.setDate(end.getDate() + 7);
+        const now = w.start <= todayIso && todayIso < end.toISOString().slice(0, 10);
+        const st = noun && sp + ss ? `${sp + ss} Stor${sp + ss === 1 ? "y" : "ies"}` : "";
+        return `<div class="wk${now ? " now" : ""}" aria-label="Week of ${dshort(w.start)}: ${p} posted, ${s} scheduled${st ? ", " + st : ""}">
+          ${p ? `<div class="seg p" style="height:${H * p / wmax}px"></div>` : ""}
+          ${s ? `<div class="seg s" style="height:${H * s / wmax - 2}px"></div>` : ""}
+          <span class="n">${p + s}</span>
+          ${sp ? `<div class="seg sp" style="height:${H * sp / wmax - 2}px"></div>` : ""}
+          ${ss ? `<div class="seg ss" style="height:${H * ss / wmax - 2}px"></div>` : ""}
+          ${sp + ss ? `<span class="n st">${sp + ss}</span>` : ""}</div>`;
+      }).join("")}
+    </div>
+    <div class="wklabels">${W.map(w => `<span>${dshort(w.start)}</span>`).join("")}</div>`;
+  }
+  const POSTS_GOAL = 7; // 1 post a day (Marshall 2026-11-10); the line measures posts, not Stories
+  function renderWeeks() {
+    weekBars("repWeeks", w => [w.posted, w.scheduled], T.recipesPerWeek, false);
+    weekBars("repPosts", w => [w.allPosted || 0, w.allScheduled || 0, w.storiesPosted || 0, w.storiesScheduled || 0], POSTS_GOAL, true);
+  }
+
+  /* Platforms */
+  const PN = { ig: ["Instagram", "var(--ig)"], fb: ["Facebook", "var(--fb)"], tt: ["TikTok", "var(--tt)"], yt: ["YouTube Shorts", "var(--yt)"] };
+  // Each tile: the last 28 days large, then a bar per 28-day period (newest first) so the trend reads at a glance.
+  const pd = s => { const [y, m, d] = s.split("-").map(Number); return MONTHS[m - 1] + " " + d; };
+  function renderPlats() {
+  document.getElementById("repPlats").innerHTML = R.platforms.map(p => {
+    const [cur, prev] = p.periods;
+    const pmax = Math.max(1, ...p.periods.map(x => x.views));
+    const ch = prev && prev.views ? Math.round(100 * (cur.views - prev.views) / prev.views) : null;
+    return `<div class="pl" style="--pc:${PN[p.platform][1]}">
+      <span class="lab" style="font-weight:800;color:var(--ink)">${PN[p.platform][0]}</span>
+      <span class="big">${fmt(cur.views)}</span>
+      <span class="lab">${ch == null ? "" : `<span class="delta ${ch >= 0 ? "up" : "down"}">${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch)}%</span> vs the 28 days before`}</span>
+      <div class="per"><div class="per-row per-hd"><span></span><span></span><span class="per-v">Views</span></div>${p.periods.map((x, i) => `<div class="per-row${i === 0 ? " now" : ""}" title="${pd(x.start)} – ${pd(x.end)}: ${fmt(x.views)} views from ${x.posts} posts, ${x.median == null ? "–" : fmt(Math.round(x.median))} per post">
+          <span class="per-l">${i === 0 ? "Last 28 days" : pd(x.start) + "–" + pd(x.end)}</span>
+          <span class="per-b"><i style="width:${100 * x.views / pmax}%"></i></span>
+          <span class="per-v">${fmt(x.views)}</span>
+          <span class="per-n">${x.posts} posts · ${x.median == null ? "–" : fmt(Math.round(x.median)) + " views per post"}</span></div>`).join("")}</div>
+      <span class="s">Source: ${p.source}</span></div>`;
+  }).join("");
+  }
+
+  /* Live refresh of the report: TikTok + YouTube from Buffer, weekly counts from the calendar, months from the tracking sheet.
+     Instagram and Facebook come from Meta, which this page can't reach, so they stay as last published. */
+  const ORG = "698b6141967ad6859ce819df", TZ = "America/Toronto", RCACHE = "szn-report-refresh-v1";
+  const CH = { tt: "698b61a1d6f8d304f9fd3eeb", yt: "698f5496d6f8d304f90ed533" };
+  const SHEET = "1xl3XpSPqFUx0h5jTGc3K8KCke2t_AQg-gvkAaSz6ynM";
+  const genTs = (() => { const t = Date.parse(String(R.generated || "").replace(" at ", " ")); return isNaN(t) ? 0 : t; })();
+  const baseSrc = "Boosts included. Instagram and Facebook from Meta, TikTok and YouTube from Buffer.";
+  const when = t => new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const tzDay = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  const addDays = (day, n) => { const d = new Date(day + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const offMin = d => { const p = new Intl.DateTimeFormat("en-US", { timeZone: TZ, timeZoneName: "shortOffset" }).formatToParts(d).find(x => x.type === "timeZoneName"); const m = /GMT([+-]\d+)(?::(\d+))?/.exec(p ? p.value : ""); return m ? (+m[1]) * 60 + Math.sign(+m[1]) * (+(m[2] || 0)) : -300; };
+  const dayStart = day => new Date(Date.parse(day + "T00:00:00Z") - offMin(new Date(day + "T12:00:00Z")) * 60000).toISOString();
+  const dayEnd = day => new Date(Date.parse(dayStart(addDays(day, 1))) - 1000).toISOString().replace(".000Z", "Z");
+  const median = a => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; };
+  const num = v => { const n = parseFloat(String(v == null ? "" : v).replace(/[$,\s]/g, "")); return isNaN(n) ? undefined : n; };
+  function jsonOf(res, ok) {
+    const test = v => v && typeof v === "object" && ok(v) ? v : null;
+    let hit = test(res.payload) || test(res.structuredContent); if (hit) return hit;
+    const texts = (res.content || []).filter(b => b.type === "text").map(b => b.text);
+    if (typeof res.payload === "string") texts.unshift(res.payload);
+    for (const t of texts) {
+      let depth = 0, st = -1, inS = false, es = false;
+      for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (inS) { if (es) es = false; else if (c === "\\") es = true; else if (c === '"') inS = false; continue; }
+        if (c === '"') inS = true; else if (c === "{") { if (!depth) st = i; depth++; }
+        else if (c === "}") { depth--; if (!depth && st >= 0) { try { const o = test(JSON.parse(t.slice(st, i + 1))); if (o) return o; } catch (e) {} st = -1; } }
+      }
+    }
+    return null;
+  }
+  async function call(mcp, server, tool, input) {
+    try {
+      try { return await mcp.callTool(server, tool, input, { cache: false }); }
+      catch (e) {
+        if (e && e.retryable) { await new Promise(r => setTimeout(r, Math.min(e.retryAfterMs || 1500, 15000) + Math.random() * 800)); return await mcp.callTool(server, tool, input, { cache: false }); }
+        throw e;
+      }
+    } catch (e) { throw { ...(e || {}), message: e && e.message, server: (e && e.server) || server }; }
+  }
+  const metric = (list, type) => { const m = (list || []).find(x => x.type === type); return m ? +m.value || 0 : 0; };
+
+  // Weekly bars: counted from the calendar. Posted Stories up to Meta's last day keep Meta's count; later ones come from the calendar.
+  function weeksFrom(items) {
+    const asOf = (R.summary && R.summary.asOf) || "";
+    const wk = day => { const d = new Date(day + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d.toISOString().slice(0, 10); };
+    const cur = wk(tzDay(new Date()));
+    const old = Object.fromEntries(R.weeks.map(w => [w.start, w]));
+    const W = {};
+    for (let k = -9; k <= 2; k++) { const st = addDays(cur, 7 * k); W[st] = { start: st, posted: 0, scheduled: 0, allPosted: 0, allScheduled: 0, storiesPosted: old[st] ? old[st].storiesPosted || 0 : 0, storiesScheduled: 0 }; }
+    items.forEach(i => {
+      const w = W[wk(i.day)]; if (!w) return;
+      const done = i.status === "posted";
+      if (i.kind === "story") { if (!i.posts.some(p => p.platform === "ig")) return; if (!done) w.storiesScheduled++; else if (i.day > asOf || !old[w.start]) w.storiesPosted++; return; }
+      done ? w.allPosted++ : w.allScheduled++;
+      (w.list = w.list || []).push({ day: i.day, title: i.title, kind: i.kind, status: i.status, recipe: i.kind === "reel" && i.posts.some(p => p.platform === "ig") });
+      if (i.kind === "reel" && i.posts.some(p => p.platform === "ig")) done ? w.posted++ : w.scheduled++;
+    });
+    return Object.values(W).sort((a, b) => a.start.localeCompare(b.start));
+  }
+
+  // TikTok + YouTube tiles: four 28-day periods ending yesterday. Totals from Buffer's own sums, the per-post middle value from each post.
+  async function platsFrom(mcp) {
+    const end0 = addDays(tzDay(new Date()), -1);
+    const periods = [0, 1, 2, 3].map(k => { const end = addDays(end0, -28 * k); return { start: addDays(end, -27), end }; });
+    const out = {};
+    for (const pl of ["tt", "yt"]) {
+      const per = [];
+      for (const p of periods) {
+        const res = await call(mcp, "Buffer", "get_aggregated_post_metrics", { organizationId: ORG, channelIds: [CH[pl]], startDateTime: dayStart(p.start), endDateTime: dayEnd(p.end) });
+        const o = jsonOf(res, v => Array.isArray(v.metrics));
+        if (!o) throw { message: "couldn't read Buffer's totals." };
+        per.push({ start: p.start, end: p.end, posts: metric(o.metrics, "postCount"), views: metric(o.metrics, "views"), vals: [] });
+      }
+      let after = null;
+      for (let i = 0; i < 10; i++) {
+        const input = { organizationId: ORG, channelIds: [CH[pl]], status: ["sent"], dueAt: { start: dayStart(addDays(periods[3].start, -2)) }, includeMetrics: true, first: 100 };
+        if (after) input.after = after;
+        const pg = jsonOf(await call(mcp, "Buffer", "list_posts", input), v => Array.isArray(v.edges));
+        if (!pg) break;
+        pg.edges.forEach(({ node: n }) => { const d = tzDay(new Date(n.sentAt || n.dueAt)); const p = per.find(x => x.start <= d && d <= x.end); if (p && n.metrics) p.vals.push(metric(n.metrics, "views")); });
+        if (!pg.pageInfo || !pg.pageInfo.hasNextPage) break;
+        after = pg.pageInfo.endCursor;
+      }
+      out[pl] = per.map(p => ({ start: p.start, end: p.end, posts: p.posts, views: p.views, median: median(p.vals) }));
+    }
+    return out;
+  }
+
+  // Month by month: completed months straight from the SZN Social Media Tracking sheet; this month's TikTok + YouTube from Buffer.
+  async function monthlyFrom(mcp) {
+    const res = await call(mcp, "Google Sheets", "get_values", { spreadsheetId: SHEET, range: "Channel Stats Monthly!A1:BZ40" });
+    const o = jsonOf(res, v => Array.isArray(v.values));
+    if (!o) throw { server: "Google Sheets", message: "couldn't read the tracking sheet." };
+    const rows = o.values, head = rows[0] || [];
+    const MN = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+    const first = (R.monthly[0] || {}).month || "2025-10";
+    const monthAt = i => { const [y, m] = first.split("-").map(Number); const d = new Date(Date.UTC(y, m - 1 + i, 1)); return d.toISOString().slice(0, 7); };
+    for (let i = 2; i < head.length; i++) { const lab = String(head[i] || "").trim().toLowerCase().slice(0, 3); if (lab && lab !== MN[+monthAt(i - 2).slice(5) - 1]) throw { server: "Google Sheets", message: "the sheet's month columns moved, so months weren't updated." }; }
+    const BLK = { totals: "total", instagram: "ig", tiktok: "tt", facebook: "fb", youtube: "yt" };
+    const MET = { "views": "views", "net new": "newFollowers", "interactions": "interactions", "spend": "spend" };
+    const months = {};
+    let blk = null;
+    rows.forEach(r => {
+      const a = String(r[0] || "").trim().toLowerCase(); if (a) blk = BLK[a] || null;
+      const m = MET[String(r[1] || "").trim().toLowerCase()];
+      if (!blk || !m) return;
+      for (let i = 2; i < r.length; i++) { const v = num(r[i]); if (v === undefined) continue; const mo = monthAt(i - 2); (months[mo] = months[mo] || {})[blk] = months[mo][blk] || {}; months[mo][blk][m] = v; }
+    });
+    const list = Object.keys(months).sort().filter(mo => months[mo].total && months[mo].total.views != null).map(mo => {
+      const e = { month: mo, ...months[mo] };
+      if (e.total.spend && e.total.newFollowers) e.total.costPerFollower = Math.round(100 * e.total.spend / e.total.newFollowers) / 100;
+      return e;
+    });
+    if (!list.length) throw { server: "Google Sheets", message: "the sheet had no months in it." };
+    // Months the sheet hasn't filled yet keep the published "so far" figures.
+    const have = new Set(list.map(x => x.month));
+    R.monthly.forEach(m => { if (!have.has(m.month) && m.partial) list.push(JSON.parse(JSON.stringify(m))); });
+    const curM = tzDay(new Date()).slice(0, 7), part = list.find(m => m.partial && m.month === curM);
+    if (part) {
+      const endD = addDays(tzDay(new Date()), -1);
+      if (endD.slice(0, 7) === curM) {
+        for (const pl of ["tt", "yt"]) {
+          const r2 = jsonOf(await call(mcp, "Buffer", "get_aggregated_post_metrics", { organizationId: ORG, channelIds: [CH[pl]], startDateTime: dayStart(curM + "-01"), endDateTime: dayEnd(endD) }), v => Array.isArray(v.metrics));
+          if (r2) part[pl] = { ...(part[pl] || {}), views: metric(r2.metrics, "views") };
+        }
+        part.total = { ...(part.total || {}), views: ["ig", "fb", "tt", "yt"].reduce((n, k) => n + ((part[k] || {}).views || 0), 0) };
+      }
+    }
+    return list.sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  // "Currently boosted" tags: read Meta Business Suite > Ads > All ads in the Claude app's built-in browser (Meta has no connector).
+  const ADS_URL = "https://business.facebook.com/latest/ad_center/all_ads?business_id=1569940147059916&asset_id=533286763206489";
+  const LIVE = /^(active|in review|scheduled|pending|learning|preparing)$/i;
+  const STAT = /^(active|in review|scheduled|pending|learning|preparing|paused|completed|draft|rejected|not delivering|off|error)$/i;
+  const words = t => String(t || "").toLowerCase().replace(/full recipe below/g, " ").match(/[\p{L}\p{N}]+/gu) || [];
+  const flat = t => words(t).join("");
+  const textOf = res => typeof res.payload === "string" ? res.payload : (res.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+  async function boostsFrom(mcp) {
+    const B = "host:claude_browser";
+    let tab = null; try { tab = localStorage.getItem("szn-ads-tab"); } catch (e) {}
+    let opened = false;
+    if (tab) { try { await mcp.callTool(B, "navigate", { url: ADS_URL, tabId: tab }, { cache: false }); opened = true; } catch (e) { if (e && (e.code === "server_not_connected" || e.code === "not_in_manifest")) throw e; } }
+    if (!opened) {
+      const r = await mcp.callTool(B, "preview_start", { url: ADS_URL }, { cache: false });
+      const m = /tabId[\s:"]*([\w-]+)/.exec(textOf(r)); tab = m ? m[1] : null;
+      try { if (tab) localStorage.setItem("szn-ads-tab", tab); } catch (e) {}
+    }
+    let txt = "";
+    for (let i = 0; i < 6; i++) {
+      await new Promise(r => setTimeout(r, 3500));
+      const input = { max_chars: 80000 }; if (tab) input.tabId = tab;
+      txt = textOf(await mcp.callTool(B, "get_page_text", input, { cache: false }));
+      if (/View results/.test(txt) && /Delivery/.test(txt)) break;
+    }
+    if (/log in|log into/i.test(txt) && !/View results/.test(txt)) throw { message: "Meta needs you to sign in, in the Claude app's browser." };
+    if (!/View results/.test(txt)) throw { message: "Meta's ads page didn't load in time." };
+    // Each ad on the page ends with "View results": take its status and its caption or campaign name.
+    const blocks = txt.split(/\n\s*View results\s*\n?/).slice(0, -1);
+    const live = [];
+    blocks.forEach(b => {
+      const lines = b.split("\n").map(l => l.trim()).filter(Boolean);
+      const si = lines.findIndex(l => STAT.test(l));
+      if (si < 0 || !LIVE.test(lines[si])) return;
+      const desc = lines.slice(0, si).sort((a, c) => c.length - a.length)[0] || "";
+      live.push(desc);
+    });
+    const cands = R.reels.filter(r => r.id);
+    const ids = new Set();
+    live.forEach(desc => {
+      const d = flat(desc), dw = new Set(words(desc));
+      let hit = cands.find(r => flat(r.title).length > 8 && d.includes(flat(r.title)));
+      if (!hit) {
+        let best = null, bestScore = 0;
+        cands.forEach(r => { const tw = words(r.title).filter(w => w.length > 3); const n = tw.filter(w => dw.has(w)).length; const sc = tw.length ? n / tw.length : 0; if (n >= 2 && sc > bestScore) { best = r; bestScore = sc; } });
+        hit = best;
+      }
+      if (hit) ids.add(hit.id);
+    });
+    return [...ids];
+  }
+
+  function apply(c) {
+    if (c.boosts) { ACTIVE.clear(); c.boosts.forEach(id => ACTIVE.add(id)); ACTIVE_ASOF = when(c.boostsTs || c.ts); renderReels(); }
+    if (c.weeks) { R.weeks = c.weeks; renderWeeks(); }
+    if (c.plats) { R.platforms = R.platforms.map(p => c.plats[p.platform] ? { ...p, periods: c.plats[p.platform], source: "Buffer, refreshed " + when(c.ts) } : p); renderPlats(); }
+    if (c.monthly) { R.monthly = c.monthly; window.__sznMonthlyRedraw && window.__sznMonthlyRedraw(); }
+    document.getElementById("repSrc").textContent = baseSrc + " Instagram and Facebook as of " + R.generated + ". TikTok, YouTube, weekly counts and months refreshed " + when(c.ts) + "." + (c.boostsTs ? " Boost tags checked " + when(c.boostsTs) + "." : "");
+  }
+  let saved = {};
+  try { const c = JSON.parse(localStorage.getItem(RCACHE) || "null"); if (c && c.ts > genTs) { saved = c; apply(c); } } catch (e) {}
+
+  window.__sznReportRefresh = async (mcp, items, say) => {
+    const errs = [], txt = window.__sznErrText || (e => (e && e.message) || "failed");
+    const c = { ts: Date.now() };
+    try { c.weeks = weeksFrom(items); } catch (e) { errs.push("weekly counts failed."); }
+    try { say && say("Updating TikTok and YouTube numbers…"); c.plats = await platsFrom(mcp); } catch (e) { errs.push(txt(e, "Buffer")); }
+    try { say && say("Reading the tracking sheet…"); c.monthly = await monthlyFrom(mcp); } catch (e) { errs.push(txt(e, e && e.server)); }
+    try { say && say("Checking which reels are boosted\u2026"); c.boosts = await boostsFrom(mcp); c.boostsTs = c.ts; }
+    catch (e) { errs.push(e && (e.code === "server_not_connected" || e.code === "not_granted" || e.code === "capability_disabled") ? "Boost tags not checked: that only works with this page open in the Claude desktop app." : e && (e.code === "not_in_manifest" || e.code === "approval_required" || e.code === "cancelled") ? "Boost tags not checked: allow the Claude browser for this page when asked." : "Boost tags not checked: " + ((e && e.message) || "unknown error")); }
+    saved = { ...saved, ...c };
+    apply(saved);
+    try { localStorage.setItem(RCACHE, JSON.stringify(saved)); } catch (e) {}
+    return errs;
+  };
+  renderWeeks();
+  renderPlats();
+})();
+</script>
+
+</body></html>
