@@ -26,10 +26,12 @@ const must = (a, b) => { if (!h.includes(a)) throw new Error("Calendar page chan
 // Title and header line
 must('const PLATS = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube", x: "X" };', 'const PLATS = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube" };');
 must('const SHORT = { ig: "IG", fb: "FB", tt: "TT", yt: "YT", x: "X" };', 'const SHORT = { ig: "IG", fb: "FB", tt: "TT", yt: "YT" };');
-// YouTube long-form videos get their own tag on the thumbnail, like ORIGINAL RECIPE.
-must(`<span class="th" \${bg(it)}>\${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : ""}</span>`,
-  `<span class="th" \${bg(it)}>\${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : it.kind === "longform" ? '<span class="orig" title="YouTube long-form video">LONG FORM</span>' : ""}</span>`);
-must('original recipe reel (not a repost or compilation)</span>', 'original recipe reel (not a repost or compilation)</span>\n    <span><span class="orig" style="position:static">LONG FORM</span> YouTube long-form video</span>');
+// YouTube long-form videos get their own tag on the thumbnail (the calendar itself has it since Nov 11; added here only if missing).
+if (!h.includes(">LONG FORM</span>")) {
+  must(`<span class="th" \${bg(it)}>\${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : ""}</span>`,
+    `<span class="th" \${bg(it)}>\${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : it.kind === "longform" ? '<span class="orig" title="YouTube long-form video">LONG FORM</span>' : ""}</span>`);
+  must('original recipe reel (not a repost or compilation)</span>', 'original recipe reel (not a repost or compilation)</span>\n    <span><span class="orig" style="position:static">LONG FORM</span> YouTube long-form video</span>');
+}
 h = h.replace(/<title>[^<]*<\/title>/, "<title>SZN Team Calendar</title>");
 if (!/^<!doctype/i.test(h)) h = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + h + "</body></html>";
 h = h.replace(/<meta name="claude:[^>]*>/g, "");
