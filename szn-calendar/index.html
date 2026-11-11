@@ -431,7 +431,7 @@ button.rc-row:hover { background: var(--bg); }
       <div class="badge"><img src="logo_white.png" alt="SZN Spice Company" width="200" height="141"></div>
       <div>
         <h1>SZN Content Calendar</h1>
-        <div class="sub" id="sub" data-team>Last updated Nov 11, 2026 at 4:54 PM</div>
+        <div class="sub" id="sub" data-team>Last updated Nov 11, 2026 at 4:55 PM</div>
       </div>
     </div>
     <div class="hdr-actions">
@@ -555,7 +555,7 @@ button.rc-row:hover { background: var(--bg); }
     const saved = JSON.parse(localStorage.getItem("szn-cal-v2") || "{}");
     if (saved.view) state.view = saved.view;
     if (saved.kinds) state.kinds = new Set([...saved.kinds, ...Object.keys(KINDS).filter(k => !(saved.known || []).includes(k) && !["reel","fuego","thisorthat","compilation","longform","repost","graphic","story"].includes(k))]);
-    if (saved.plats) state.plats = new Set(saved.plats);
+    if (saved.plats) state.plats = new Set(saved.plats.filter(k => k in PLATS));
   } catch (e) {}
   // Light / dark toggle: remembered per browser; until one is picked the page follows the system setting.
   (() => {

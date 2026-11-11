@@ -32,6 +32,8 @@ if (!h.includes(">LONG FORM</span>")) {
     `<span class="th" \${bg(it)}>\${it.kind === "reel" ? '<span class="orig" title="Original recipe reel">ORIGINAL RECIPE</span>' : it.kind === "longform" ? '<span class="orig" title="YouTube long-form video">LONG FORM</span>' : ""}</span>`);
   must('original recipe reel (not a repost or compilation)</span>', 'original recipe reel (not a repost or compilation)</span>\n    <span><span class="orig" style="position:static">LONG FORM</span> YouTube long-form video</span>');
 }
+// Ignore platforms saved in a browser that the page no longer shows (e.g. X), so "Select all" reads right.
+must("if (saved.plats) state.plats = new Set(saved.plats);", "if (saved.plats) state.plats = new Set(saved.plats.filter(k => k in PLATS));");
 h = h.replace(/<title>[^<]*<\/title>/, "<title>SZN Team Calendar</title>");
 if (!/^<!doctype/i.test(h)) h = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + h + "</body></html>";
 h = h.replace(/<meta name="claude:[^>]*>/g, "");
