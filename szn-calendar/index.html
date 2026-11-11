@@ -604,6 +604,18 @@ button.rc-row:hover { background: var(--bg); }
     const ppost = ITEMS.reduce((n, i) => n + i.posts.length, 0);
 
     document.getElementById("gen").textContent = DATA.generated ? "Buffer data as of " + DATA.generated : "";
+    // Under the title: when all the data was last updated, and when the next full refresh runs
+    // (every morning ~7:15–7:30 AM Toronto). Worked out in the browser so it never goes stale.
+    (() => {
+      const sub = document.getElementById("sub"); if (!sub) return;
+      const gen = (window.SZN_REPORT && window.SZN_REPORT.generated) || DATA.generated || "";
+      const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+      const g = t => (parts.find(x => x.type === t) || {}).value;
+      const d = new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
+      if (`${g("hour")}:${g("minute")}` >= "07:30") d.setUTCDate(d.getUTCDate() + 1);
+      const next = d.toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
+      sub.innerHTML = (gen ? `Last updated ${esc(gen)}<br>` : "") + `Next update ${next} around 7:30 AM`;
+    })();
   }
 
   /* Filter chips */
