@@ -57,6 +57,7 @@ must("function renderWeek() {", `function renderWeek() {
   }
   function renderWeekFull() {`);
 // The header line under the title
-h = h.replace(/(<div class="sub" id="sub" data-team>)[^<]*/, "$1Team view · last 3 days and the next 5 days · updated every morning");
+const builtAt = new Date().toLocaleString("en-US", { timeZone: "America/Toronto", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }).replace(/, (\d{1,2}:)/, " at $1");
+h = h.replace(/(<div class="sub" id="sub" data-team>)[^<]*/, "$1Last updated " + builtAt);
 fs.writeFileSync(path.join(out, "index.html"), h);
 console.log(JSON.stringify({ today: todayTO, items: items.length, dataKB: Math.round(fs.statSync(path.join(out, "data.js")).size / 1024), generated: D.generated }));
