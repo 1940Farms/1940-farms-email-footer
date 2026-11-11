@@ -1,11 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-/* Team version */
-.group:has(#vWeek), #refreshBtn, #lastRef, .navbtn, .todaybtn { display: none !important; }
-.wkview.team .dow, .wkview.team .grid { grid-template-columns: repeat(9, minmax(0, 1fr)); }
-.wkview.team .day.past-team { background: color-mix(in srgb, var(--past) 55%, var(--panel)); }
-.teamnote { color: var(--muted); font-size: 12.5px; font-weight: 600; }
-@media (max-width: 760px) { .wkview.team .grid { grid-template-columns: minmax(0, 1fr); } }
-</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>SZN Team Calendar</title>
 
 <script>try { const t = localStorage.getItem("szn-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
@@ -423,6 +416,13 @@ button.rc-row:hover { background: var(--bg); }
   .months { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* Team version */
+.group:has(#vWeek), #refreshBtn, #lastRef, .navbtn, .todaybtn { display: none !important; }
+.wkview.team .dow, .wkview.team .grid { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+.wkview.team .day.past-team { background: color-mix(in srgb, var(--past) 55%, var(--panel)); }
+.teamnote { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+@media (max-width: 760px) { .wkview.team .grid { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <div class="wrap">
@@ -435,8 +435,8 @@ button.rc-row:hover { background: var(--bg); }
       </div>
     </div>
     <div class="hdr-actions">
-      <button class="refreshbtn" id="refreshBtn" title="Pull the latest posts from Buffer"><span class="ri" aria-hidden="true">&#x21bb;</span> <span class="rl">Refresh</span></button>
-      <span class="lastref" id="lastRef" role="status" aria-live="polite"></span>
+      <button class="refreshbtn" id="refreshBtn" hidden style="display:none" title="Pull the latest posts from Buffer"><span class="ri" aria-hidden="true">&#x21bb;</span> <span class="rl">Refresh</span></button>
+      <span class="lastref" id="lastRef" hidden style="display:none" role="status" aria-live="polite"></span>
       <div class="seg" role="group" aria-label="Colour mode">
         <button id="thLight" aria-pressed="false">Light</button>
         <button id="thDark" aria-pressed="false">Dark</button>

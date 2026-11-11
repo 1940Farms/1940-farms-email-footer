@@ -38,15 +38,22 @@ h = h.replace(/<title>[^<]*<\/title>/, "<title>SZN Team Calendar</title>");
 if (!/^<!doctype/i.test(h)) h = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + h + "</body></html>";
 h = h.replace(/<meta name="claude:[^>]*>/g, "");
 must('<div class="sub" id="sub">', '<div class="sub" id="sub" data-team>');
-// Hide the month view, the view switch, the arrows and the refresh button.
-must("</style>", `
+// The team page has no refresh: the button and its status line stay in the page (its script looks
+// them up) but are marked hidden, so no stylesheet can bring them back.
+must('<button class="refreshbtn" id="refreshBtn"', '<button class="refreshbtn" id="refreshBtn" hidden style="display:none"');
+must('<span class="lastref" id="lastRef"', '<span class="lastref" id="lastRef" hidden style="display:none"');
+// Hide the month view, the view switch and the arrows. The rules go in the calendar's own (last) style
+// block: the first one can be the publishing wrapper's, which the artifact host replaces.
+const lastStyle = h.lastIndexOf("</style>");
+if (lastStyle < 0) throw new Error("Calendar page changed; can't find: </style>");
+h = h.slice(0, lastStyle) + `
 /* Team version */
 .group:has(#vWeek), #refreshBtn, #lastRef, .navbtn, .todaybtn { display: none !important; }
 .wkview.team .dow, .wkview.team .grid { grid-template-columns: repeat(9, minmax(0, 1fr)); }
 .wkview.team .day.past-team { background: color-mix(in srgb, var(--past) 55%, var(--panel)); }
 .teamnote { color: var(--muted); font-size: 12.5px; font-weight: 600; }
 @media (max-width: 760px) { .wkview.team .grid { grid-template-columns: minmax(0, 1fr); } }
-</style>`);
+</style>` + h.slice(lastStyle + "</style>".length);
 must("function render() {", "function render() { state.view = \"week\";");
 must("function renderWeek() {", `function renderWeek() {
     // Team view: 3 days back, today, 5 days ahead.
