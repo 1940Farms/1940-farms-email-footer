@@ -250,6 +250,62 @@ button.rc-row:hover { background: var(--bg); }
 .scale-note i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+/* How we compare (competitors, Meta Businesses to watch) */
+.cmp-list { display: grid; gap: 2px; }
+.cmp-row { display: grid; grid-template-columns: 26px minmax(86px, 118px) minmax(0, 1fr) 64px; gap: 10px; align-items: center; padding: 5px 6px; border-radius: 8px; font-size: 13px; }
+.cmp-row.us { background: color-mix(in srgb, var(--red) 10%, transparent); }
+.cmp-row .av { width: 26px; height: 26px; border-radius: 50%; background: var(--past) center/cover no-repeat; box-shadow: 0 0 0 1px var(--line); }
+.cmp-row .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+.cmp-row .nm small { display: block; color: var(--muted); font-weight: 600; font-size: 11px; }
+.cmp-row.us .nm { color: var(--t-red); }
+.cmp-row .cbar { height: 12px; background: var(--track); border-radius: 4px; position: relative; overflow: hidden; }
+.cmp-row .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--muted); opacity: .55; border-radius: 0 4px 4px 0; min-width: 2px; }
+.cmp-row.us .cbar i { background: var(--red); opacity: 1; }
+.cmp-row .cbar.wait { background: repeating-linear-gradient(90deg, var(--track) 0 6px, transparent 6px 10px); }
+.cmp-row .v { font-variant-numeric: tabular-nums; font-weight: 800; text-align: right; }
+.winpill { display: inline-block; vertical-align: 3px; margin-left: 8px; font-family: var(--body); font-size: 12px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--ink); background: var(--today); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.tp-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.tp { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 12px; color: inherit; text-decoration: none; }
+.tp:hover { border-color: var(--muted); }
+.tp.us { border-color: var(--red); background: color-mix(in srgb, var(--red) 8%, transparent); }
+.tp.us .who > span:last-child { color: var(--t-red); }
+.tp .cov { width: 96px; aspect-ratio: 9 / 16; border-radius: 8px; background: var(--past) center/cover no-repeat; box-shadow: 0 0 0 1px var(--line); }
+.tp .ttl { font-size: 13px; font-weight: 600; line-height: 1.35; margin: 10px 0 0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.tp .who { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; }
+.tp .who .av { width: 26px; height: 26px; border-radius: 50%; background: var(--past) center/cover no-repeat; box-shadow: 0 0 0 1px var(--line); flex: none; }
+.tp .who small { display: block; color: var(--muted); font-weight: 600; font-size: 11px; }
+.tp .x { font-size: 26px; font-weight: 900; line-height: 1; margin: 10px 0 4px; color: var(--t-red); }
+.tp .x span { font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+.tp .st { font-size: 12px; color: var(--muted); font-weight: 600; }
+.tp .go { font-size: 12px; font-weight: 800; margin-top: 10px; display: block; }
+.bl-list { display: grid; gap: 2px; }
+.bl-row { display: grid; grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; padding: 5px 6px; font-size: 13px; }
+.bl-row .nm { font-weight: 700; line-height: 1.15; }
+.bl-row .nm small { display: block; color: var(--muted); font-weight: 600; font-size: 11px; }
+.bl-row .cbar { height: 12px; background: var(--track); border-radius: 4px; position: relative; overflow: hidden; }
+.bl-row .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--red); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bl-row .v { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.bl-row.few { opacity: .45; }
+.ehist { margin-top: 14px; overflow-x: auto; }
+.bump { width: 100%; height: auto; display: block; font-family: var(--body); }
+.bump .grid line { stroke: var(--line); stroke-width: 1; }
+.bump .grid text, .bump .xl text { fill: var(--muted); font-size: 11px; font-weight: 700; }
+.bump .ln.us path { fill: none; stroke: var(--red); stroke-width: 3; stroke-linejoin: round; }
+.bump .ln.us circle { fill: var(--red); stroke: var(--panel); stroke-width: 2; }
+.bump .lab { fill: var(--t-red); font-weight: 800; font-size: 14px; }
+.bump .xl .lead { font-weight: 600; font-size: 10.5px; }
+.ehist h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 6px; }
+.ehist table { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 12.5px; min-width: 100%; }
+.ehist th, .ehist td { padding: 5px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ehist th:first-child, .ehist td:first-child { text-align: left; padding-left: 4px; }
+.ehist thead th { font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; vertical-align: bottom; }
+.ehist thead th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.ehist td b { font-weight: 800; }
+.ehist td small { color: var(--muted); font-weight: 700; margin-left: 5px; }
+.ehist tr.us td { background: color-mix(in srgb, var(--red) 10%, transparent); }
+.ehist tr.us td:first-child { color: var(--t-red); font-weight: 800; }
+.ehist .note { font-size: 11.5px; color: var(--muted); margin: 6px 0 0; }
+.cmp-row .v.up { color: var(--good); } .cmp-row .v.down { color: var(--t-red); } .cmp-row .v.mut { color: var(--muted); font-weight: 600; }
 .fmt { display: grid; grid-template-columns: 120px minmax(0, 1fr) 46px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
 .fmt .nm { font-weight: 700; display: flex; align-items: center; gap: 6px; }
 .fmt .nm .sw { width: 9px; height: 9px; border-radius: 50%; flex: none; }
@@ -470,12 +526,12 @@ button.rc-row:hover { background: var(--bg); }
   <section class="report" id="report" aria-labelledby="repTitle">
     <div class="report-head">
       <h2 id="repTitle">How it's doing</h2>
-      <p class="src" id="repSrc">Boosts included. Instagram and Facebook from Meta, TikTok and YouTube from Buffer.</p>
+      <p class="src" id="repSrc">Instagram and Facebook from Meta, TikTok and YouTube from Buffer.</p>
     </div>
     <div class="panel sumpanel">
       <div class="glance-head"><h3 id="repSumTitle">Instagram at a glance</h3>
         <div class="seg" role="group" aria-label="Platform" id="repSumTabs"></div></div>
-      <p class="why" id="repSumWhy">Everything that happened on the account in each period, boosts included.</p>
+      <p class="why" id="repSumWhy">Everything that happened on the account in each period.</p>
       <div class="sumwrap"><table class="sum" id="repSum"></table></div>
     </div>
     <div class="panel" id="repMonthlyPanel">
@@ -488,7 +544,7 @@ button.rc-row:hover { background: var(--bg); }
       <p class="why" id="repCardWhy">Instagram numbers for original recipe videos only, Jan 1 to today (no promos, compilations or reposts). Engagement rate = likes, comments, shares and saves ÷ views.</p>
       <p class="tgt-line"><b>Target:</b> beat the food &amp; beverage average of 2.5%. <a href="#target-source" id="tgtLink">Where does this come from?</a></p>
       <div class="tgt-note" id="target-source" hidden>
-        <p><b>Industry benchmark:</b> <a href="https://pages.dashsocial.com/hubfs/social-media-benchmark/2026/H1/instagram.pdf" target="_blank" rel="noopener">Dash Social’s 2026 Instagram Benchmark Report</a> (3,363 brands, July–December 2025, organic and boosted content) measures engagement rate as likes, comments, saves and shares ÷ views, the same way it’s measured here. Food &amp; beverage brands average <b>2.5%</b>. For comparison, Reels across all industries average 2.7%, and brands under 190K followers average 2.0%.</p>
+        <p><b>Industry benchmark:</b> <a href="https://pages.dashsocial.com/hubfs/social-media-benchmark/2026/H1/instagram.pdf" target="_blank" rel="noopener">Dash Social’s 2026 Instagram Benchmark Report</a> (3,363 brands, July–December 2025, all content) measures engagement rate as likes, comments, saves and shares ÷ views, the same way it’s measured here. Food &amp; beverage brands average <b>2.5%</b>. For comparison, Reels across all industries average 2.7%, and brands under 190K followers average 2.0%.</p>
       </div>
       <div class="rc" id="repReels"></div>
       <div class="scale-note">
@@ -517,6 +573,38 @@ button.rc-row:hover { background: var(--bg); }
         <h3 style="margin-top:22px">Posts per week</h3>
         <p class="why">White number = posts (a post shared to several platforms counts once). <span class="stkey"></span> = Stories, stacked above with their own number. Solid = posted, dashed = scheduled.</p>
         <div id="repPosts"></div>
+      </div>
+      <div class="panel" id="blendPanel">
+        <h3>Which blends do best</h3>
+        <p class="why" id="blendWhy"></p>
+        <div class="bl-list" id="blendList"></div>
+      </div>
+    </div>
+    <div class="report-head sub-head" id="cmpHead">
+      <h2>How we compare</h2>
+      <p class="src" id="cmpSrc">Instagram. From Meta Business Suite’s Businesses to watch, saved every morning.</p>
+    </div>
+    <div class="two" id="cmpPanels">
+      <div class="panel">
+        <h3>Follower growth</h3>
+        <p class="why" id="cmpGrowWhy">% change in followers over the last 28 days. Percent, so a small account can beat a big one.</p>
+        <div class="cmp-list" id="cmpGrow"></div>
+      </div>
+      <div class="panel">
+        <h3>Posts per week</h3>
+        <p class="why" id="cmpPostWhy">Reels and posts on each brand’s Instagram grid, averaged over the last 4 weeks. Stories not counted.</p>
+        <div class="cmp-list" id="cmpPosts"></div>
+      </div>
+      <div class="panel" style="grid-column:1/-1" id="cmpEngPanel">
+        <div class="glance-head"><h3>Engagement per 1,000 followers <span class="winpill" id="cmpEngWin"></span></h3></div>
+        <p class="why" id="cmpEngWhy"></p>
+        <div class="cmp-list" id="cmpEng"></div>
+        <div class="ehist" id="cmpEngHist"></div>
+      </div>
+      <div class="panel" style="grid-column:1/-1" id="cmpTopPanel">
+        <div class="glance-head"><h3>Best posts last week <span class="winpill" id="cmpTopWin"></span></h3></div>
+        <p class="why">The posts that beat their own brand’s normal post by the most. “5×” means a post got 5 times the likes and comments of that brand’s typical post that week, so big and small brands are judged the same way. One post per brand; brands with fewer than 3 posts that week are skipped. Our own best post comes first, in red, for reference.</p>
+        <div class="tp-list" id="cmpTop"></div>
       </div>
     </div>
     <div class="panel" hidden><!-- Every platform: removed from view (Marshall 2026-11-10); At a glance covers each platform -->
@@ -1002,8 +1090,8 @@ button.rc-row:hover { background: var(--bg); }
     const md = s => { const [y, m, d] = s.split("-").map(Number); return MONTHS[m - 1] + " " + d; };
     const NAMES = { ig: "Instagram", fb: "Facebook", tt: "TikTok", yt: "YouTube Shorts" };
     const order = ["ig", "fb", "yt", "tt"].filter(k => ALL[k]);
-    const why = (k, S) => k === "ig" ? `What happened on the account, boosts included. Meta's numbers run through ${md(S.asOf)}.`
-      : k === "fb" ? `What happened on the Facebook page, boosts included. Meta's numbers run through ${md(S.asOf)}.`
+    const why = (k, S) => k === "ig" ? `What happened on the account. Meta's numbers run through ${md(S.asOf)}.`
+      : k === "fb" ? `What happened on the Facebook page. Meta's numbers run through ${md(S.asOf)}.`
       : k === "yt" ? `Views and interactions (likes, comments, shares) on the Shorts posted in each period, from Buffer; new subscribers from YouTube Studio (it shows the last 28 days). Through ${md(S.asOf)}.`
       : `Views and interactions (likes, comments, shares) on the TikTok posts published in each period, from Buffer, through ${md(S.asOf)}. TikTok Studio only gives follower counts for the last 28 days.`;
     const val = (key, n, approx) => key === "spend" ? money0(n) : approx && n >= 10000 ? (n / 1000).toFixed(1) + "K" : fmt(Math.round(n));
@@ -1138,9 +1226,9 @@ button.rc-row:hover { background: var(--bg); }
       const th = r.thumb || it.thumb;
       return `<button class="rc-row"${r.id ? ` data-open="${r.id}"` : ""}>
         <span class="th" ${th ? `style="background-image:url('${th}')"` : ""}></span>
-        <span class="tt">${esc(r.title)}<small>${r.day ? dshort(r.day) : ""}${r.day && r.day.slice(0, 4) !== String(new Date().getFullYear()) ? " " + r.day.slice(0, 4) : ""}${!boosted && ACTIVE.has(r.id) ? `<span class="chipb live" title="Boost running or starting in Ads Manager as of ${ACTIVE_ASOF}">Currently boosted</span>` : ""}${boosted ? `<span class="chipb">${r.kind === "reel" ? (r.original ? "Original recipe" : "Reel") : (KIND[r.kind] ? KIND[r.kind][0] : r.kind)}</span>` : r.kind !== "reel" ? `<span class="chipb">${KIND[r.kind] ? KIND[r.kind][0] : r.kind}</span>` : ""}</small></span>
+        <span class="tt">${esc(r.title)}<small>${r.day ? dshort(r.day) : ""}${r.day && r.day.slice(0, 4) !== String(new Date().getFullYear()) ? " " + r.day.slice(0, 4) : ""}${boosted ? `<span class="chipb">${r.kind === "reel" ? (r.original ? "Original recipe" : "Reel") : (KIND[r.kind] ? KIND[r.kind][0] : r.kind)}</span>` : r.kind !== "reel" ? `<span class="chipb">${KIND[r.kind] ? KIND[r.kind][0] : r.kind}</span>` : ""}</small></span>
         <span class="barwrap">${bar}<span class="verdict ${vc}">${s != null ? `${rate(r).toFixed(1)}% · ${vt}` : vt}</span></span>
-        <span class="num"${r.src === "buffer" ? ' title="From Buffer: organic views plus boost views"' : ""}>${fmt(r.igViews)}</span>
+        <span class="num">${fmt(r.igViews)}</span>
         <span class="num">${fmt(r.followsTotal)}</span>
         <span class="num">${r.spend ? "$" + Math.round(r.spend).toLocaleString() : `<span class="mut">–</span>`}</span>
         <span class="num">${r.spend && r.followsTotal ? "$" + (r.spend / r.followsTotal).toFixed(2) : `<span class="mut">–</span>`}</span></button>`;
@@ -1154,6 +1242,111 @@ button.rc-row:hover { background: var(--bg); }
     document.getElementById("repBoosted").innerHTML = head + B.map(r => reelRow(r, true)).join("");
   }
   renderBoosted();
+  /* Which blends do best: original recipe reels grouped by the SZN blend named in the caption. */
+  (function renderBlends() {
+    const B = R.blends, P = document.getElementById("blendPanel");
+    if (!B || !B.rows || !B.rows.length) { P.hidden = true; return; }
+    const mx = Math.max(1, ...B.rows.map(b => b.views || 0));
+    const k = n => n >= 1000 ? (n / 1000).toFixed(n >= 1e4 ? 0 : 1) + "K" : String(Math.round(n));
+    document.getElementById("blendWhy").textContent = `Every original recipe reel on Instagram since ${dshort(B.since)} (${B.total} reels), grouped by the SZN blend named in its caption. The bar is the typical reel’s views: the middle one, so a single viral video can’t carry a blend. A reel that uses two blends counts for both. Faded = fewer than 3 reels, too few to judge.` + (B.untagged ? ` ${B.untagged} reels don’t name a blend.` : "");
+    document.getElementById("blendList").innerHTML = B.rows.map(b => `<div class="bl-row${b.reels < 3 ? " few" : ""}" title="Best: ${esc(b.best)}">
+      <span class="nm">${esc(b.blend)}<small>${b.reels} reel${b.reels > 1 ? "s" : ""} · typically ${k(b.shares || 0)} shares, ${k(b.saves || 0)} saves</small></span>
+      <span class="cbar"><i style="width:${(b.views || 0) / mx * 100}%"></i></span><span class="v">${k(b.views || 0)}</span></div>`).join("");
+  })();
+  /* How we compare: competitor snapshots (R.competitors), built by build_report.competitors(). */
+  (function renderCompetitors() {
+    const C = R.competitors;
+    if (!C || !C.rows || !C.rows.length) { document.getElementById("cmpHead").hidden = true; document.getElementById("cmpPanels").hidden = true; return; }
+    const compact = n => n >= 1e6 ? (n / 1e6).toFixed(2).replace(/0$/, "") + "M" : n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + "K" : n.toLocaleString();
+    const addDays = (s, k) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + k); return d.toISOString().slice(0, 10); };
+    const row = (r, barHtml, val, vcls) => `<div class="cmp-row${r.us ? " us" : ""}"><span class="av"${r.img ? ` style="background-image:url('${r.img}')"` : ""}></span>
+      <span class="nm" title="@${esc(r.handle)}">${esc(r.name)}<small>${compact(r.followers)} followers</small></span>${barHtml}<span class="v ${vcls || ""}">${val}</span></div>`;
+    const has = C.days > 0;
+    let G = C.rows.slice();
+    if (has) {
+      G.sort((a, b) => (b.growth ?? -1e9) - (a.growth ?? -1e9));
+      const gmax = Math.max(0.01, ...G.map(r => r.growth || 0));
+      document.getElementById("cmpGrow").innerHTML = G.map(r => r.growth == null
+        ? row(r, `<span class="cbar wait"></span>`, "new", "mut")
+        : row(r, `<span class="cbar"><i style="width:${Math.max(0, r.growth) / gmax * 100}%"></i></span>`,
+            (r.growth > 0 ? "+" : "") + String(+r.growth.toFixed(Math.abs(r.growth) < 1 ? 2 : 1)) + "%",
+            r.growth > 0 ? "up" : r.growth < 0 ? "down" : "")).join("");
+      document.getElementById("cmpGrowWhy").textContent = C.days >= 28
+        ? "% change in followers over the last 28 days. Percent, so a small account can beat a big one."
+        : `% change in followers since ${dshort(C.since)} (${C.days} day${C.days > 1 ? "s" : ""} so far; a full 28 days from ${dshort(addDays(C.first, 28))}). Percent, so a small account can beat a big one.`;
+    } else {
+      G.sort((a, b) => b.followers - a.followers);
+      document.getElementById("cmpGrow").innerHTML = G.map(r => row(r, `<span class="cbar wait"></span>`, "–", "mut")).join("");
+      document.getElementById("cmpGrowWhy").textContent = `Tracking started ${dshort(C.first)}. Growth shows from tomorrow, with a full 28 days from ${dshort(addDays(C.first, 28))}. Percent, so a small account can beat a big one.`;
+    }
+    const P = C.rows.slice().sort((a, b) => b.perWeek - a.perWeek);
+    const pmax = Math.max(1, ...P.map(r => r.perWeek));
+    document.getElementById("cmpPosts").innerHTML = P.map(r => row(r, `<span class="cbar"><i style="width:${r.perWeek / pmax * 100}%"></i></span>`, r.perWeek.toFixed(1))).join("");
+    if (C.postsWeeks) document.getElementById("cmpPostWhy").textContent = `Reels and posts on each brand’s Instagram grid, averaged over the 4 weeks ${dshort(C.postsWeeks[0])}–${dshort(C.postsWeeks[1])}. Stories not counted. Posts made with a creator that show on the brand’s grid count too.`;
+    /* Competitors' best posts last week (vs each brand's own typical post). */
+    const T = C.topPosts || [], tpP = document.getElementById("cmpTopPanel");
+    if (!T.length) tpP.hidden = true; else {
+      const byH = Object.fromEntries(C.rows.map(r => [r.handle, r]));
+      document.getElementById("cmpTopWin").textContent = C.engWindow ? `Posts from ${dshort(C.engWindow[0])}–${dshort(C.engWindow[1])}` : "";
+      document.getElementById("cmpTop").innerHTML = T.map(t => {
+        const r = byH[t.handle] || { name: t.handle }, owner = t.path.split("/")[1];
+        const collab = owner && owner !== t.handle ? `with @${esc(owner)} · ` : "";
+        return `<a class="tp${t.us ? " us" : ""}" href="https://www.instagram.com${esc(t.path)}" target="_blank" rel="noopener">
+          <span class="cov"${t.img ? ` style="background-image:url('${t.img}')"` : ""}></span><span>
+          <span class="who"><span class="av"${r.img ? ` style="background-image:url('${r.img}')"` : ""}></span><span>${esc(r.name)}<small>${collab}${dshort(t.day)}</small></span></span>
+          ${t.title ? `<p class="ttl">${esc(t.title)}</p>` : ""}
+          <div class="x">${t.x}×<span>${t.us ? "our" : "their"} usual post</span></div>
+          <div class="st">${t.likes.toLocaleString()} likes · ${t.comments.toLocaleString()} comments</div>
+          <span class="go">Open on Instagram ↗</span></span></a>`;
+      }).join("");
+    }
+    /* Engagement per post: weekly read of each brand's recent posts on Instagram. */
+    const E = C.rows.filter(r => r.eng);
+    const engPanel = document.getElementById("cmpEngPanel");
+    if (!E.length) engPanel.hidden = true; else {
+      let em = "k";
+      const drawEng = () => {
+        const val = r => em === "k" ? r.eng.per1k : (r.eng.own || 0);
+        const L = E.slice().sort((a, b) => val(b) - val(a)), mx = Math.max(0.01, ...L.map(val));
+        document.getElementById("cmpEng").innerHTML = L.map((r, i) => row(r, `<span class="cbar"><i style="width:${val(r) / mx * 100}%"></i></span>`,
+          em === "k" ? val(r).toFixed(1) : Math.round(val(r)).toLocaleString())).join("");
+        const ws = C.engWindow ? `${dshort(C.engWindow[0])}–${dshort(C.engWindow[1])}` : "";
+        const rank = L.findIndex(r => r.us) + 1;
+        document.getElementById("cmpEngWin").textContent = C.engWindow ? `Posts from ${ws}, ${C.engWindow[0].slice(0, 4)}` : "";
+        document.getElementById("cmpEngWhy").textContent = (em === "k" ? "A fair score for brands of any size. Big brands get more likes just because more people follow them, so we take a brand’s normal post and count its likes and comments for every 1,000 followers. A score of 2.0 means 2 likes or comments per 1,000 followers. Higher means their followers care more. A small brand like us can win when one post really takes off."
+          : "The total pile. We add up every like and comment on all of a brand’s own posts that week (collabs with creators left out). Brands with lots of followers, or that post a lot, almost always come out on top, so this shows size more than how good the posts are.")
+          + (rank ? ` SZN is #${rank} of ${L.length} for ${ws}.` : "") + ` Read from Instagram ${dshort(C.engAsOf)}.`;
+        // Week by week: rank of every brand in each Sunday-Saturday week (1 = top), SZN in red.
+        // Ranks, not raw values, because the biggest brands' totals run ~100x ours. Values sit in each point's tooltip.
+        const key = em === "k" ? "per1k" : "own";
+        const W = (C.engHistory || []).filter(w => Object.values(w.brands).some(b => b[key] != null)).slice(-6);
+        const hb = document.getElementById("cmpEngHist");
+        if (W.length < 2) hb.innerHTML = "";
+        else {
+          // One line: SZN's rank each week (#1 at the top). The week's leader sits under each date; values in tooltips.
+          const names = Object.fromEntries(C.rows.map(r => [r.handle, r.name]));
+          const rk = W.map(w => Object.entries(w.brands).filter(([h, b]) => b[key] != null && names[h]).sort((x, y) => y[1][key] - x[1][key]));
+          const maxR = Math.max(...rk.map(o => o.length));
+          const VW = 640, VH = 230, L0 = 44, R0 = 30, T0 = 30, B0 = 46;
+          const X = i => L0 + (VW - L0 - R0) * (W.length === 1 ? 0.5 : i / (W.length - 1));
+          const Y = r => T0 + (VH - T0 - B0) * (r - 1) / Math.max(1, maxR - 1);
+          const fv = v => key === "per1k" ? v.toFixed(1) + " per 1K followers" : Math.round(v).toLocaleString() + " likes + comments";
+          const wl = w => dshort(w.start) + "–" + dshort(w.end);
+          const pts = rk.map((o, i) => { const j = o.findIndex(([h]) => h === "cookingwithszn"); return j < 0 ? null : { i, r: j + 1, v: o[j][1][key], n: o.length, top: o[0] }; });
+          let d = "", pen = false;
+          pts.forEach(p => { if (!p) { pen = false; return; } d += (pen ? "L" : "M") + X(p.i).toFixed(1) + " " + Y(p.r).toFixed(1); pen = true; });
+          const dots = pts.filter(Boolean).map(p => `<circle cx="${X(p.i)}" cy="${Y(p.r)}" r="6"><title>${wl(W[p.i])}: SZN #${p.r} of ${p.n} · ${fv(p.v)}</title></circle><text x="${X(p.i)}" y="${Y(p.r) - 12}" class="lab" text-anchor="middle">#${p.r}</text>`).join("");
+          const ticks = [1, Math.ceil(maxR / 2), maxR].filter((v, i, a) => a.indexOf(v) === i);
+          const grid = ticks.map(r => `<line x1="${L0}" x2="${VW - R0}" y1="${Y(r)}" y2="${Y(r)}"/><text x="${L0 - 10}" y="${Y(r) + 4}" text-anchor="end">#${r}</text>`).join("");
+          const xl = W.map((w, i) => `<text x="${X(i)}" y="${VH - 24}" text-anchor="middle">${dshort(w.start)}</text>` + (rk[i][0] ? `<text x="${X(i)}" y="${VH - 8}" text-anchor="middle" class="lead">#1 ${esc(names[rk[i][0][0]])}</text>` : "")).join("");
+          hb.innerHTML = `<h4>SZN’s rank each week · out of ${maxR} brands, #1 at the top</h4><svg class="bump" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="SZN rank by week"><g class="grid">${grid}</g><g class="ln us"><path d="${d}"/>${dots}</g><g class="xl">${xl}</g></svg>
+            <p class="note"><b>How to read it:</b> each dot is one week (Sunday to Saturday). The top of the chart is 1st place and the bottom is last. The number on each dot is where SZN finished that week, and under each date is the brand that finished 1st. Hover a dot to see SZN’s actual score.</p>`;
+        }
+      };
+      drawEng();
+    }
+    document.getElementById("cmpSrc").textContent = `Instagram. From Meta Business Suite’s Businesses to watch, as of ${dshort(C.asOf)}. Saved every morning.`;
+  })();
   function renderReels() {
     const pages = Math.max(1, Math.ceil(R.reels.length / PAGE));
     page = Math.min(page, pages - 1);
@@ -1184,7 +1377,7 @@ button.rc-row:hover { background: var(--bg); }
 
   /* Formats: typical post in each format, all measured the same way (Meta, boosts included).
      Formats with fewer than 3 posts are listed but not ranked, since one post can't show a pattern. */
-  if (R.formatsSince) document.getElementById("repFmtWhy").textContent = `Instagram since ${dshort(R.formatsSince)}, boosts included. Shares for the typical post in each format.`;
+  if (R.formatsSince) document.getElementById("repFmtWhy").textContent = `Instagram since ${dshort(R.formatsSince)}. Shares for the typical post in each format.`;
   const ranked = R.formats.filter(f => f.posts >= 3), few = R.formats.filter(f => f.posts < 3);
   const fmax = Math.max(1, ...ranked.map(f => f.shares || 0));
   const fmtRow = (f, small) => {
@@ -1193,7 +1386,7 @@ button.rc-row:hover { background: var(--bg); }
     return `<div class="fmt"><span class="nm"><span class="sw" style="background:${col}"></span>${nm}</span>
       <div class="bar" title="${fmt(f.shares)} shares on the typical post">${small ? "" : `<i style="width:${w}%;background:${col}"></i>`}</div>
       <span class="num">${small ? "–" : fmt(f.shares)}</span>
-      <span class="fmt-meta">${f.posts} post${f.posts === 1 ? "" : "s"}${f.boosted != null ? ` (${f.boosted} boosted)` : ""} · ${fmt(f.views)} views · ${fmt(f.saves)} saves · ${fmt(f.follows)} follows${small ? " · too few posts to judge" : ""}</span></div>`;
+      <span class="fmt-meta">${f.posts} post${f.posts === 1 ? "" : "s"} · ${fmt(f.views)} views · ${fmt(f.saves)} saves · ${fmt(f.follows)} follows${small ? " · too few posts to judge" : ""}</span></div>`;
   };
   document.getElementById("repFormats").innerHTML = ranked.map(f => fmtRow(f, false)).join("")
     + (few.length ? `<p class="why" style="margin:10px 0 2px">Too few posts to compare yet:</p>` + few.map(f => fmtRow(f, true)).join("") : "")
@@ -1259,7 +1452,7 @@ button.rc-row:hover { background: var(--bg); }
   const CH = { tt: "698b61a1d6f8d304f9fd3eeb", yt: "698f5496d6f8d304f90ed533" };
   const SHEET = "1xl3XpSPqFUx0h5jTGc3K8KCke2t_AQg-gvkAaSz6ynM";
   const genTs = (() => { const t = Date.parse(String(R.generated || "").replace(" at ", " ")); return isNaN(t) ? 0 : t; })();
-  const baseSrc = "Boosts included. Instagram and Facebook from Meta, TikTok and YouTube from Buffer.";
+  const baseSrc = "Instagram and Facebook from Meta, TikTok and YouTube from Buffer.";
   const when = t => new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   const tzDay = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
   const addDays = (day, n) => { const d = new Date(day + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
