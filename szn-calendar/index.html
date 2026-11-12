@@ -250,6 +250,11 @@ button.rc-row:hover { background: var(--bg); }
 .scale-note i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+/* How we compare: two equal columns that stretch with the window (the full-width cards below would
+   otherwise keep auto-fit's extra empty columns and squeeze these two to the left). */
+#cmpPanels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) { #cmpPanels { grid-template-columns: minmax(0, 1fr); } }
+.cmp-row { grid-template-columns: 26px minmax(86px, 160px) minmax(0, 1fr) 64px; }
 /* How we compare (competitors, Meta Businesses to watch) */
 .cmp-list { display: grid; gap: 2px; }
 .cmp-row { display: grid; grid-template-columns: 26px minmax(86px, 118px) minmax(0, 1fr) 64px; gap: 10px; align-items: center; padding: 5px 6px; border-radius: 8px; font-size: 13px; }
