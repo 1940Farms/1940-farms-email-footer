@@ -265,6 +265,20 @@ button.rc-row:hover { background: var(--bg); }
 .cmp-row.us .nm { color: var(--t-red); }
 .cmp-row .cbar { height: 12px; background: var(--track); border-radius: 4px; position: relative; overflow: hidden; }
 .cmp-row .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--muted); opacity: .55; border-radius: 0 4px 4px 0; min-width: 2px; }
+/* Total engagement each week: brands x weeks, each row shaded against its own best week. */
+.wt-wrap { overflow-x: auto; margin: 0 -4px; }
+.wt { border-collapse: separate; border-spacing: 2px; font-size: 12.5px; width: 100%; min-width: 760px; }
+.wt th { font-size: 11px; font-weight: 700; color: var(--muted); text-align: right; padding: 2px 6px 4px; white-space: nowrap; }
+.wt th.now, .wt td.now { border-left: 2px dashed var(--line); }
+.wt th small { display: block; font-weight: 600; font-size: 10px; }
+.wt td { text-align: right; padding: 6px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); }
+.wt td.z { color: var(--muted); }
+.wt td.nm { text-align: left; position: sticky; left: 0; background: var(--panel); z-index: 1; padding-left: 4px; }
+.wt .who { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.wt .who .av { width: 22px; height: 22px; border-radius: 50%; flex: none; background: var(--past) center/cover no-repeat; box-shadow: 0 0 0 1px var(--line); }
+.wt tr.us .who { color: var(--t-red); }
+.wt td.avg { font-weight: 700; border-left: 1px solid var(--line); }
+.wt th.avg { border-left: 1px solid var(--line); }
 .cmp-row.us .cbar i { background: var(--red); opacity: 1; }
 .cmp-row .cbar.wait { background: repeating-linear-gradient(90deg, var(--track) 0 6px, transparent 6px 10px); }
 .cmp-row .v { font-variant-numeric: tabular-nums; font-weight: 800; text-align: right; }
@@ -610,6 +624,11 @@ button.rc-row:hover { background: var(--bg); }
         <div class="glance-head"><h3>Best posts last week <span class="winpill" id="cmpTopWin"></span></h3></div>
         <p class="why">The posts that beat their own brand’s normal post by the most. “5×” means a post got 5 times the likes and comments of that brand’s typical post that week, so big and small brands are judged the same way. One post per brand; brands with fewer than 3 posts that week are skipped. Our own best post comes first, in red, for reference.</p>
         <div class="tp-list" id="cmpTop"></div>
+      </div>
+      <div class="panel" style="grid-column:1/-1" id="cmpTotPanel">
+        <div class="glance-head"><h3>Total engagement each week <span class="winpill" id="cmpTotWin"></span></h3></div>
+        <p class="why" id="cmpTotWhy"></p>
+        <div class="wt-wrap"><table class="wt" id="cmpTot"></table></div>
       </div>
     </div>
     <div class="panel" hidden><!-- Every platform: removed from view (Marshall 2026-11-10); At a glance covers each platform -->
@@ -1350,6 +1369,36 @@ button.rc-row:hover { background: var(--bg); }
       };
       drawEng();
     }
+    /* Total engagement each week (C.totals): every like + comment on every grid post, per brand per Sun-Sat week. */
+    (function () {
+      const TT = C.totals, tp = document.getElementById("cmpTotPanel");
+      if (!TT || !TT.weeks || !TT.weeks.length) { tp.hidden = true; return; }
+      const Wk = TT.weeks, byH = Object.fromEntries(C.rows.map(r => [r.handle, r]));
+      const full = i => !Wk[i].partial;
+      const avg = v => { const f = v.filter((x, i) => full(i) && x); return f.length ? f.reduce((a, x) => a + x.t, 0) / f.length : 0; };
+      const hs = Object.keys(TT.brands).filter(h => byH[h]).sort((a, b) => (b === "cookingwithszn") - (a === "cookingwithszn") || avg(TT.brands[b]) - avg(TT.brands[a]));
+      const fmt = n => n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + "K" : n.toLocaleString();
+      const head = `<tr><th></th>${Wk.map(w => `<th class="${w.partial ? "now" : ""}">${w.partial ? "This week<small>so far</small>" : dshort(w.start)}</th>`).join("")}<th class="avg">8-wk avg</th></tr>`;
+      const body = hs.map(h => {
+        const r = byH[h], v = TT.brands[h], us = h === "cookingwithszn";
+        const mx = Math.max(1, ...v.filter((x, i) => x && full(i)).map(x => x.t));
+        const cells = v.map((x, i) => {
+          const w = Wk[i], lab = `${r.name} · ${dshort(w.start)}–${dshort(w.end)}`;
+          const cls = w.partial ? "now" : "";
+          if (!x) return `<td class="z ${cls}" title="${esc(lab)}: not read">–</td>`;
+          if (!x.n) return `<td class="z ${cls}" title="${esc(lab)}: no posts">0</td>`;
+          const a = w.partial ? 0 : Math.round(6 + 40 * Math.min(1, x.t / mx));
+          const bg = a ? ` style="background:color-mix(in srgb, var(${us ? "--red" : "--muted"}) ${a}%, transparent)"` : "";
+          const asof = w.partial ? (us ? " (updates daily)" : w.read ? ` (as of ${dshort(w.read)})` : "") : "";
+          return `<td class="${cls}"${bg} title="${esc(lab)}: ${x.t.toLocaleString()} likes + comments on ${x.n} post${x.n > 1 ? "s" : ""}${asof}">${fmt(x.t)}</td>`;
+        }).join("");
+        return `<tr class="${us ? "us" : ""}"><td class="nm"><span class="who"><span class="av"${r.img ? ` style="background-image:url('${r.img}')"` : ""}></span>${esc(r.name)}</span></td>${cells}<td class="avg">${fmt(Math.round(avg(v)))}</td></tr>`;
+      }).join("");
+      document.getElementById("cmpTot").innerHTML = `<thead>${head}</thead><tbody>${body}</tbody>`;
+      const fw = Wk.filter(w => !w.partial), cw = Wk.find(w => w.partial);
+      document.getElementById("cmpTotWin").textContent = fw.length ? `${dshort(fw[0].start)} – now` : "";
+      document.getElementById("cmpTotWhy").textContent = `Every like and comment on every post a brand put on its Instagram grid, added up for each week (Sunday to Saturday).`;
+    })();
     document.getElementById("cmpSrc").textContent = `Instagram. From Meta Business Suite’s Businesses to watch, as of ${dshort(C.asOf)}. Saved every morning.`;
   })();
   function renderReels() {
