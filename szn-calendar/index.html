@@ -113,6 +113,10 @@ h2 { font-family: var(--display); font-weight: 400; text-transform: uppercase; f
 .navbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
 .navbar h2 { min-width: 0; font-size: 28px; }
 .navbtn { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--panel); font-size: 16px; font-weight: 800; }
+.calref { display: inline-flex; align-items: center; gap: 5px; }
+.calref .ri { display: inline-block; font-size: 14px; line-height: 1; }
+.calref.busy .ri { animation: spin .8s linear infinite; }
+.calref:disabled { cursor: progress; opacity: .7; }
 .todaybtn { border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 12.5px; }
 .months { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 
@@ -150,6 +154,10 @@ h2 { font-family: var(--display); font-weight: 400; text-transform: uppercase; f
 .card .k { font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: .06em; color: var(--kt, var(--kc)); margin-bottom: 2px; }
 .card .cbody { display: grid; gap: 3px; min-width: 0; }
 .card .th { position: relative; overflow: hidden; }
+[data-nopic] { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--kc, var(--muted)) 22%, var(--panel)) 0 6px, color-mix(in srgb, var(--kc, var(--muted)) 10%, var(--panel)) 6px 12px) !important; position: relative; }
+.th[data-nopic]::after, .big[data-nopic]::after { content: "Picture after next update"; position: absolute; inset: auto 4px 6px 4px; text-align: center; font-size: 9.5px; font-weight: 800; line-height: 1.15; color: var(--ink); opacity: .75; }
+.cal:not(.wkview) .th[data-nopic]::after { content: "\1F4F7"; font-size: 12px; }
+.big[data-nopic]::after { font-size: 14px; inset: auto 0 46% 0; }
 .orig { position: absolute; left: 3px; top: 3px; background: #111; color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .03em; line-height: 1; padding: 2px 3px; border-radius: 3px; box-shadow: 0 0 0 1px #fff, 0 1px 3px rgba(0,0,0,.4); white-space: nowrap; }
 .orig.inl { position: static; display: inline-block; box-shadow: none; }
 .cal:not(.wkview) .th .orig { display: none; }
@@ -506,7 +514,7 @@ button.rc-row:hover { background: var(--bg); }
       <div class="badge"><img src="logo_white.png" alt="SZN Spice Company" width="200" height="141"></div>
       <div>
         <h1>SZN Content Calendar</h1>
-        <div class="sub" id="sub" data-team>Last updated Nov 16, 2026 at 8:26 AM · Next update Nov 17 around 7:30 AM</div>
+        <div class="sub" id="sub" data-team>Last updated Nov 16, 2026 at 4:47 PM · Next update Nov 17 around 7:30 AM</div>
       </div>
     </div>
     <div class="hdr-actions">
@@ -663,6 +671,7 @@ button.rc-row:hover { background: var(--bg); }
   const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
   const state = { view: "week", month: null, week: null, plats: new Set(Object.keys(PLATS)), kinds: new Set(Object.keys(KINDS)) };
+  let calBusy = false; // calendar-only refresh running
   try {
     const saved = JSON.parse(localStorage.getItem("szn-cal-v2") || "{}");
     if (saved.view) state.view = saved.view;
@@ -688,7 +697,10 @@ button.rc-row:hover { background: var(--bg); }
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const TODAY = iso(today);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const bg = it => it.thumb ? `style="background-image:url('${it.thumb}')"` : "";
+  // Only pictures stored in the page can show (web links are blocked here); a post added since the
+  // last full update gets a placeholder until the morning update stores its picture.
+  const okThumb = t => !!t && !/^https?:/i.test(t);
+  const bg = it => okThumb(it.thumb) ? `style="background-image:url('${it.thumb}')"` : it.thumb ? 'data-nopic title="Picture shows after the next morning update"' : "";
 
   const byDay = {};
   ITEMS.forEach(it => (byDay[it.day] = byDay[it.day] || []).push(it));
@@ -779,6 +791,7 @@ button.rc-row:hover { background: var(--bg); }
         <button class="navbtn" data-nav="1" aria-label="Next month">›</button>
         <h2>${MONTHS[m - 1]} ${y}</h2>
         <button class="todaybtn" data-nav="0">This month</button>
+        <button class="todaybtn calref${calBusy ? " busy" : ""}" data-calref ${calBusy ? "disabled" : ""} title="Pull the latest posts from Buffer for the calendar only (skips the report)"><span class="ri" aria-hidden="true">&#x21bb;</span> ${calBusy ? "Refreshing\u2026" : "Calendar"}</button>
         <div class="months">${allMonths.map(mm => { const [yy, mo] = mm.split("-").map(Number);
           return `<button class="chip" data-month="${mm}" aria-pressed="${mm === state.month}">${MONTHS[mo - 1].slice(0, 3)}${yy !== today.getFullYear() ? " " + yy : ""}</button>`; }).join("")}</div>
       </div>
@@ -804,6 +817,7 @@ button.rc-row:hover { background: var(--bg); }
         <button class="navbtn" data-wk="1" aria-label="Next week">›</button>
         <h2>${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()} – ${MONTHS[b.getMonth()].slice(0, 3)} ${b.getDate()}</h2>
         <button class="todaybtn" data-wk="0">This week</button>
+        <button class="todaybtn calref${calBusy ? " busy" : ""}" data-calref ${calBusy ? "disabled" : ""} title="Pull the latest posts from Buffer for the calendar only (skips the report)"><span class="ri" aria-hidden="true">&#x21bb;</span> ${calBusy ? "Refreshing\u2026" : "Calendar"}</button>
       </div>
       <div class="cal wkview"><div class="dow">${days.map(d => `<div>${DOW[d.getDay()]} ${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}</div>`).join("")}</div>
         <div class="grid">${days.map(d => dayCell(d, false)).join("")}</div></div>`;
@@ -818,7 +832,7 @@ button.rc-row:hover { background: var(--bg); }
     const what = it.media === "video" ? (it.durationS ? `Video · ${it.durationS}s` : "Video")
       : it.slides > 1 ? `Carousel · ${it.slides} slides` : it.media === "image" ? "Image" : "Text";
     dlg.innerHTML = `<div class="dlg" style="--kc:${KINDS[it.kind].color};--kt:${KINDS[it.kind].text};position:relative">
-      <div class="big" ${it.thumb ? `style="background-image:url('${it.thumb}')"` : ""}></div>
+      <div class="big" ${bg(it)}></div>
       <div class="info">
         <div><span class="kpill">${KINDS[it.kind].label}</span> <span class="hint">${what}</span></div>
         <h3>${esc(it.title)}</h3>
@@ -1037,23 +1051,35 @@ button.rc-row:hover { background: var(--bg); }
   window.__sznErrText = errText;
   let mcpP = null;
   try { mcpP = window.claude && window.claude.use ? window.claude.use("mcp") : null; } catch (e) {}
+  // Calendar only: pull every post from Buffer and redraw the calendar (no report, no competitors).
+  async function refreshCalendar() {
+    const mcp = mcpP ? await mcpP : null;
+    if (!mcp) throw { code: "not_granted" };
+    const startDay = DATA.items.filter(i => i.kind !== "longform").map(i => i.day).sort()[0] || iso(today);
+    const start = startDay + "T00:00:00Z";
+    const posts = await fetchAll(mcp, start);
+    if (!posts.length) throw { code: "empty", message: "Buffer returned no posts, so nothing was changed." };
+    ITEMS = rebuild(posts, start);
+    reindex();
+    lastTs = Date.now();
+    saveCache(lastTs);
+    renderTotals();
+    render();
+    showLast();
+    return mcp;
+  }
+  document.getElementById("main").addEventListener("click", async e => {
+    if (!e.target.closest("[data-calref]") || calBusy) return;
+    calBusy = true; render();
+    try { await refreshCalendar(); }
+    catch (err) { say(errText(err), true); }
+    finally { calBusy = false; render(); }
+  });
   refreshBtn.addEventListener("click", async () => {
     const b = refreshBtn;
     b.disabled = true; b.classList.add("busy"); b.querySelector(".rl").textContent = "Refreshing…";
     try {
-      const mcp = mcpP ? await mcpP : null;
-      if (!mcp) throw { code: "not_granted" };
-      const startDay = DATA.items.filter(i => i.kind !== "longform").map(i => i.day).sort()[0] || iso(today);
-      const start = startDay + "T00:00:00Z";
-      const posts = await fetchAll(mcp, start);
-      if (!posts.length) throw { code: "empty", message: "Buffer returned no posts, so nothing was changed." };
-      ITEMS = rebuild(posts, start);
-      reindex();
-      lastTs = Date.now();
-      saveCache(lastTs);
-      renderTotals();
-      render();
-      showLast();
+      const mcp = await refreshCalendar();
       // Then the parts of "How it's doing" that Buffer and the tracking sheet can supply.
       if (window.__sznReportRefresh) {
         b.querySelector(".rl").textContent = "Updating report\u2026";
@@ -1249,7 +1275,7 @@ button.rc-row:hover { background: var(--bg); }
 
       const th = r.thumb || it.thumb;
       return `<button class="rc-row"${r.id ? ` data-open="${r.id}"` : ""}>
-        <span class="th" ${th ? `style="background-image:url('${th}')"` : ""}></span>
+        <span class="th" ${th && !/^https?:/i.test(th) ? `style="background-image:url('${th}')"` : ""}></span>
         <span class="tt">${esc(r.title)}<small>${r.day ? dshort(r.day) : ""}${r.day && r.day.slice(0, 4) !== String(new Date().getFullYear()) ? " " + r.day.slice(0, 4) : ""}${boosted ? `<span class="chipb">${r.kind === "reel" ? (r.original ? "Original recipe" : "Reel") : (KIND[r.kind] ? KIND[r.kind][0] : r.kind)}</span>` : r.kind !== "reel" ? `<span class="chipb">${KIND[r.kind] ? KIND[r.kind][0] : r.kind}</span>` : ""}</small></span>
         <span class="barwrap">${bar}<span class="verdict ${vc}">${s != null ? `${rate(r).toFixed(1)}% · ${vt}` : vt}</span></span>
         <span class="num">${fmt(r.igViews)}</span>
