@@ -614,7 +614,7 @@ button.rc-row:hover { background: var(--bg); }
     <div class="two" id="cmpPanels">
       <div class="panel">
         <h3>Follower growth</h3>
-        <p class="why" id="cmpGrowWhy">% change in followers over the last 28 days. Percent, so a small account can beat a big one.</p>
+        <p class="why" id="cmpGrowWhy">% change in followers over the last 28 days.</p>
         <div class="cmp-list" id="cmpGrow"></div>
       </div>
       <div class="panel">
@@ -1322,12 +1322,12 @@ button.rc-row:hover { background: var(--bg); }
             (r.growth > 0 ? "+" : "") + String(+r.growth.toFixed(Math.abs(r.growth) < 1 ? 2 : 1)) + "%",
             r.growth > 0 ? "up" : r.growth < 0 ? "down" : "")).join("");
       document.getElementById("cmpGrowWhy").textContent = C.days >= 28
-        ? "% change in followers over the last 28 days. Percent, so a small account can beat a big one."
-        : `% change in followers since ${dshort(C.since)} (${C.days} day${C.days > 1 ? "s" : ""} so far; a full 28 days from ${dshort(addDays(C.first, 28))}). Percent, so a small account can beat a big one.`;
+        ? "% change in followers over the last 28 days."
+        : `% change in followers since ${dshort(C.since)} (${C.days} day${C.days > 1 ? "s" : ""} so far; a full 28 days from ${dshort(addDays(C.first, 28))}).`;
     } else {
       G.sort((a, b) => b.followers - a.followers);
       document.getElementById("cmpGrow").innerHTML = G.map(r => row(r, `<span class="cbar wait"></span>`, "–", "mut")).join("");
-      document.getElementById("cmpGrowWhy").textContent = `Tracking started ${dshort(C.first)}. Growth shows from tomorrow, with a full 28 days from ${dshort(addDays(C.first, 28))}. Percent, so a small account can beat a big one.`;
+      document.getElementById("cmpGrowWhy").textContent = `Tracking started ${dshort(C.first)}. Growth shows from tomorrow, with a full 28 days from ${dshort(addDays(C.first, 28))}.`;
     }
     const P = C.rows.slice().sort((a, b) => b.perWeek - a.perWeek);
     const pmax = Math.max(1, ...P.map(r => r.perWeek));
